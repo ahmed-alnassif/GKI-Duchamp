@@ -1,4 +1,4 @@
-name: Build GKI
+name: GKI-Duchamp Builder
 
 on:
   workflow_call:
@@ -129,6 +129,7 @@ jobs:
           #TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
           #TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
           #GH_TOKEN: ${{ secrets.GH_TOKEN }} # github token
+          KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
           KSU: ${{ inputs.KSU }}
           KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
           KSU_MANUAL_HOOK: ${{ inputs.KSU_MANUAL_HOOK }}
