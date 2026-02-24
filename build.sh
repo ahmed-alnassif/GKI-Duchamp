@@ -131,6 +131,18 @@ cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
 patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
 
+# Add the stub at the end of susfs.c
+cat >> fs/susfs.c << 'EOF'
+
+/* Added for SukiSU compatibility */
+void susfs_reorder_mnt_id(void)
+{
+    /* stub - required by SukiSU's kernel_umount when SUSFS is enabled */
+    return;
+}
+EXPORT_SYMBOL(susfs_reorder_mnt_id);
+EOF
+
 #patch -p1 < $KERNEL_PATCHES/susfs/fs_proc_base.c-fix-k6.1.patch || echo "Additional fix patch failed."
 
 SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
