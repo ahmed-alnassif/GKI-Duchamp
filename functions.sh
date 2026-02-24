@@ -53,11 +53,6 @@ install_ksu() {
 # ksu_included() function
 # Type: bool
 ksu_included() {
-  # LOGIC FIX:
-  # Cek variabel input $KSU secara langsung.
-  # 1. "yes" (Standard KSU) -> Return True (Masuk blok Standard).
-  # 2. "resukisu" -> Return False (Lewati Standard, masuk blok ReSukiSU).
-  # 3. "no" (Vanilla) -> Return False (Tidak ada KSU).
   [ "$KSU" == "yes" ]
   return $?
 }
@@ -65,9 +60,6 @@ ksu_included() {
 # susfs_included() function
 # Type: bool
 susfs_included() {
-  # Return True jika input KSU_SUSFS adalah "true"
-  # Ini digunakan oleh build.sh untuk memutuskan apakah akan clone SUSFS (Standard/Manual Fix)
-  # atau membiarkan ReSukiSU menangani patchingnya sendiri.
   [ "$KSU_SUSFS" == "true" ]
   return $?
 }

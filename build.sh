@@ -58,13 +58,6 @@ LINUX_VERSION=$(make kernelversion)
 LINUX_VERSION_CODE=${LINUX_VERSION//./}
 DEFCONFIG_FILE=$(find ./arch/arm64/configs -name "$KERNEL_DEFCONFIG")
 echo "LINUX_VERSION=$LINUX_VERSION" >> $GITHUB_ENV
-
-# --- ADD KSU patch SCRIPT ---
-log "Patching custom KSU & SuSFS configs from GitHub..."
-export KSU
-export KSU_SUSFS
-source $WORKDIR/patches/gki_defconfig.sh
-# --------------------------------------
 cd $WORKDIR
 
 # Set Kernel variant
@@ -142,6 +135,11 @@ patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || ech
 
 SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
+log "Patching custom KSU & SuSFS configs from GitHub..."
+export KSU
+export KSU_SUSFS
+source $WORKDIR/patches/gki_defconfig.sh
+
 # set localversion
 if [ "${TODO:-kernel}" = "kernel" ]; then
   LATEST_COMMIT_HASH=$(git rev-parse --short HEAD)
@@ -199,6 +197,27 @@ if [ "$DEFCONFIG_TO_MERGE" ]; then
     error "scripts/kconfig/merge_config.sh does not exist in the kernel source"
   fi
   make ${MAKE_ARGS[@]} olddefconfig
+fi
+
+# SUSFS debugging
+if susfs_included; then
+
+  log "=== DEBUG: Checking defconfig for SUSFS ==="
+  grep -i susfs ./arch/arm64/configs/gki_defconfig || echo "❌ SUSFS NOT FOUND in defconfig!"
+  echo ""
+
+  # DEBUG: Check if SUSFS made it to .config
+  log "=== DEBUG: Checking .config for SUSFS ==="
+  grep CONFIG_KSU_SUSFS $OUTDIR/.config || echo "❌ SUSFS NOT ENABLED in .config!"
+  grep CONFIG_KSU_SUSFS_SUS_MAP $OUTDIR/.config || echo "❌ SUSFS_SUS_MAP not enabled!"
+  echo ""
+
+  # If SUSFS is in defconfig but not in .config, check dependencies
+  if grep -q "CONFIG_KSU_SUSFS" ./arch/arm64/configs/gki_defconfig && ! grep -q "CONFIG_KSU_SUSFS=y" $OUTDIR/.config; then
+    log "⚠️ SUSFS in defconfig but not in .config - checking dependencies..."
+    grep "depends on" $(find . -name "Kconfig" -exec grep -l "KSU_SUSFS" {} \;) 2>/dev/null || echo "No dependency info found"
+  fi
+
 fi
 
 # Upload defconfig if we are doing defconfig
