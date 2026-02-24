@@ -147,6 +147,8 @@ EOF
 
 SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
+echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+
 log "Patching custom KSU & SuSFS configs from GitHub..."
 export KSU
 export KSU_SUSFS

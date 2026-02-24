@@ -150,7 +150,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           repository: ${{ env.RELEASE_REPO }}
-          name: ${{ env.RELEASE_NAME }}
+          name: ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
           tag_name: ${{ env.RELEASE }}-r${{ github.run_number }}
           prerelease: true
           files: |
@@ -158,13 +158,13 @@ jobs:
             artifacts/checksums.txt
             artifacts/checksums-md5.txt
           body: |
-            ### 📢 ${{ env.RELEASE_NAME }}
+            ### 📢 ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
             
             **Build Information:**
             - 🐧 **Kernel:** ${{ env.KERNEL_NAME }}
             - 🔖 **Version:** ${{ env.LINUX_VERSION }} (android14-6.1-lts)
             - 🔰 **Variant:** SukiSU Ultra
-            - 🛡️ **SuSFS:** ${{ env.SUSFS_VERSION }}
+            - 🛡️ **SuSFS:** ඞ ${{ env.SUSFS_VERSION }}
             
             ---
             **Compiler:** ${{ env.COMPILER_STRING }}
