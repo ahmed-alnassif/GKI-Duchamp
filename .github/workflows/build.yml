@@ -9,8 +9,6 @@ on:
         type: string
       KSU_SUSFS:
         type: string
-      KSU_MANUAL_HOOK:
-        type: string
       LAST_BUILD:
         type: string
       KERNEL_VERSION:
@@ -35,18 +33,10 @@ on:
         options:
           - "no"
           - "yes"
-          - "resukisu"
+
       KSU_SUSFS:
         description: Include SUSFS?
-        default: "false"
-        type: choice
-        options:
-          - "true"
-          - "false"
-
-      KSU_MANUAL_HOOK:
-        description: Use KSU Manual Hooks?
-        default: "false"
+        default: "true"
         type: choice
         options:
           - "true"
@@ -54,7 +44,7 @@ on:
 
       KERNEL_VERSION:
         description: Which kernel version do you want to build?
-        default: ""
+        default: "6.1"
         type: choice
         options:
           - "6.6"
@@ -82,7 +72,7 @@ jobs:
           elif [ "${{ toJson(github.event.inputs) }}" == "null" ]; then
             echo "STATUS=RELEASE" >> $GITHUB_ENV
           else
-            echo "STATUS=BETA" >> $GITHUB_ENV
+            echo "STATUS=RELEASE" >> $GITHUB_ENV
           fi
 
       - name: Validate Inputs and Secrets
@@ -92,7 +82,6 @@ jobs:
           #GH_TOKEN: ${{ secrets.GH_TOKEN }} # github token
           KSU: ${{ inputs.KSU }}
           KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
-          KSU_MANUAL_HOOK: ${{ inputs.KSU_MANUAL_HOOK }}
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
         run: |
           _error() {
@@ -105,9 +94,6 @@ jobs:
           # KernelSU Validation (Supports yes, no, resukisu)
           if [[ $KSU == "no" && $KSU_SUSFS == "true" ]]; then
               _error "Cannot use SuSFS without KernelSU"
-          fi
-          if [[ $KSU == "no" && $KSU_MANUAL_HOOK == "true" ]]; then
-            _error "Cannot use KSU Manual Hooks without KernelSU!"
           fi
           # ReSukiSU membutuhkan SUSFS aktif untuk patch kompatibilitas 6.1/6.6
           if [[ $KSU == "resukisu" && $KSU_SUSFS != "true" ]]; then
@@ -132,7 +118,6 @@ jobs:
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
           KSU: ${{ inputs.KSU }}
           KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
-          KSU_MANUAL_HOOK: ${{ inputs.KSU_MANUAL_HOOK }}
           LAST_BUILD: ${{ inputs.LAST_BUILD }}
           TODO: ${{ inputs.TODO }}
           STATUS: ${{ env.STATUS }} # Mengambil nilai dari step Determine Build Status
@@ -155,3 +140,45 @@ jobs:
         with:
           name: info-${{ github.run_number }}
           path: artifacts/*.txt
+
+      - name: Generate Checksums
+        run: |
+          cd artifacts
+          sha256sum *.zip > checksums.txt
+          md5sum *.zip > checksums-md5.txt
+          CHECKSUMS=$(cat checksums.txt)
+          CHECKSUMS="${CHECKSUMS//'%'/'%25'}"
+          CHECKSUMS="${CHECKSUMS//$'\n'/'%0A'}"
+          CHECKSUMS="${CHECKSUMS//$'\r'/'%0D'}"
+          echo "CHECKSUMS=$CHECKSUMS" >> $GITHUB_ENV
+
+
+      - name: Upload All Builds to release repo
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: ${{ env.RELEASE_REPO }}
+          name: ${{ env.RELEASE_NAME }}
+          tag_name: ${{ env.RELEASE }}-r${{ github.run_number }}
+          prerelease: true
+          files: |
+            artifacts/*.zip
+            artifacts/checksums.txt
+            artifacts/checksums-md5.txt
+          body: |
+            ### 📢 ${{ env.RELEASE_NAME }}
+            
+            **Build Information:**
+            - 🐧 **Kernel:** ${{ env.KERNEL_NAME }}
+            - 🔖 **Version:** ${{ env.LINUX_VERSION }} (android14-6.1-lts)
+            - 🔰 **Variant:** SukiSU Ultra
+            - 🛡️ **SuSFS:** ${{ env.SUSFS_VERSION }}
+            
+            ---
+            **Compiler:** ${{ env.COMPILER_STRING }}
+            
+            **Checksums:**
+            ```
+            ${{ env.CHECKSUMS }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Built-in token, no need to set manually

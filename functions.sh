@@ -97,7 +97,7 @@ ERROR: $*
 EOF
   )
   echo -e "[ERROR] $*"
-  send_msg "$err_txt"
-  upload_file "$WORKDIR/build.log"
+  #send_msg "$err_txt"
+  #upload_file "$WORKDIR/build.log"
   exit 1
 }
