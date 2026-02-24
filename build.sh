@@ -63,7 +63,7 @@ echo "LINUX_VERSION=$LINUX_VERSION" >> $GITHUB_ENV
 log "Patching custom KSU & SuSFS configs from GitHub..."
 export KSU
 export KSU_SUSFS
-source $WORKDIR/patchs/gki_defconfig.sh
+source $WORKDIR/patches/gki_defconfig.sh
 # --------------------------------------
 cd $WORKDIR
 
