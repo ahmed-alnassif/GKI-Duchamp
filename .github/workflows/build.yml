@@ -133,6 +133,7 @@ jobs:
           path: artifacts/*.txt
 
       - name: Generate Checksums
+        if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
         run: |
           cd artifacts
           sha256sum *.zip > checksums.txt
@@ -145,6 +146,7 @@ jobs:
 
 
       - name: Upload All Builds to release repo
+        if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
         uses: softprops/action-gh-release@v2
         with:
           repository: ${{ env.RELEASE_REPO }}
