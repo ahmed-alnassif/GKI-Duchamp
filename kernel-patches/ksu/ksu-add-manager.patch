@@ -1,0 +1,65 @@
+diff --git a/kernel/Kbuild b/kernel/Kbuild
+index abd1380..6274d22 100644
+--- a/kernel/Kbuild
++++ b/kernel/Kbuild
+@@ -64,6 +64,11 @@ $(info -- $(REPO_NAME) version name: $(KSU_VERSION_FULL))
+ 
+ ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
+ ccflags-y += -DKSU_VERSION_FULL=\"$(KSU_VERSION_FULL)\"
++
++ifndef RESUKISU_MANAGER_LIST
++RESUKISU_MANAGER_LIST := 0x377:d3469712b6214462764a1d8d3e5cbe1d6819a0b629791b9f4101867821f1df64,0x35c:947ae944f3de4ed4c21a7e4f7953ecf351bfa2b36239da37a34111ad29993eef,0x375:484fcba6e6c43b1fb09700633bf2fb4758f13cb0b2f4457b80d075084b26c588,0x384:a9462b8b98ea1ca7901b0cbdcebfaa35f0aa95e51b01d66e6b6d2c81b97746d8,0x396:f415f4ed9435427e1fdf7f1fccd4dbc07b3d6b8751e4dbcec6f19671f427870b,0x381:52d52d8c8bfbe53dc2b6ff1c613184e2c03013e090fe8905d8e3d5dc2658c2e4,0x3e6:79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7,0x338:f26471a28031130362bce7eebffb9a0b8afc3095f163ce0c75a309f03b644a1f
++endif
++
++ccflags-y += -DKSU_NEXT_MANAGER_LIST=\"$(RESUKISU_MANAGER_LIST)\"
+
+diff --git a/kernel/su/manager_sign.h b/kernel/su/manager_sign.h
+index 0000000..1111111 100644
+--- a/kernel/su/manager_sign.h
++++ b/kernel/su/manager_sign.h
+@@ -30,6 +30,46 @@
+ #define EXPECTED_HASH_RSUNTK                                                   \
+     "f415f4ed9435427e1fdf7f1fccd4dbc07b3d6b8751e4dbcec6f19671f427870b"
+ 
++// KOWX712/KernelSU (0x375)
++#define EXPECTED_SIZE_KOWX712 0x375
++#define EXPECTED_HASH_KOWX712                                                     \
++    "484fcba6e6c43b1fb09700633bf2fb4758f13cb0b2f4457b80d075084b26c588"
++
++// MAMBO/KernelSU (0x384)
++#define EXPECTED_SIZE_MAMBO 0x384
++#define EXPECTED_HASH_MAMBO                                                      \
++    "a9462b8b98ea1ca7901b0cbdcebfaa35f0aa95e51b01d66e6b6d2c81b97746d8"
++
++// Manager WILD KSU (0x381)
++#define EXPECTED_SIZE_WILD 0x381
++#define EXPECTED_HASH_WILD                                                      \
++    "52d52d8c8bfbe53dc2b6ff1c613184e2c03013e090fe8905d8e3d5dc2658c2e4"
++
++// Manager KernelSU-Next (0x3e6)
++#define EXPECTED_SIZE_NEXT 0x3e6
++#define EXPECTED_HASH_NEXT                                                      \
++    "79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7"
++
++// Manager KernelSU-pershoot/KernelSU-pershoot (0x338)
++#define EXPECTED_SIZE_pershoot 0x338
++#define EXPECTED_HASH_pershoot                                                    \
++    "f26471a28031130362bce7eebffb9a0b8afc3095f163ce0c75a309f03b644a1f"
++
+ // Neko/KernelSU
+ #define EXPECTED_SIZE_NEKO 0x29c
+ #define EXPECTED_HASH_NEKO                                                     \
+diff --git a/kernel/su/apk_sign.c b/kernel/su/apk_sign.c
+index 0000000..2222222 100644
+--- a/kernel/su/apk_sign.c
++++ b/kernel/su/apk_sign.c
+@@ -18,6 +18,15 @@ static apk_sign_key_t apk_sign_keys[] = {
+     { EXPECTED_SIZE_RESUKISU, EXPECTED_HASH_RESUKISU }, /* ReSukiSU/ReSukiSU */
++    { EXPECTED_SIZE_KOWX712, EXPECTED_HASH_KOWX712 }, // KOWX712
++    { EXPECTED_SIZE_MAMBO, EXPECTED_HASH_MAMBO }, // MAMBO
++    { EXPECTED_SIZE_WILD, EXPECTED_HASH_WILD }, // WILD
++    { EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT }, // NEXT
++    { EXPECTED_SIZE_pershoot, EXPECTED_HASH_pershoot }, // pershoot
+ #ifdef CONFIG_KSU_MULTI_MANAGER_SUPPORT
+     { EXPECTED_SIZE_WEISHU, EXPECTED_HASH_WEISHU }, // Official
+     { EXPECTED_SIZE_5EC1CFF,  EXPECTED_HASH_5EC1CFF }, // 5ec1cff/KernelSU

@@ -1,0 +1,25 @@
+From d0e2abe825bb5c6730973d17773448ad308e91b8 Mon Sep 17 00:00:00 2001
+From: Rama Bondan Prakoso <ramanarubp@gmail.com>
+Date: Mon, 24 Nov 2025 22:22:00 +0700
+Subject: [PATCH] ANDROID: GKI: Fix statfs crc mismatch after adding SUSFS
+
+---
+ fs/statfs.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/fs/statfs.c b/fs/statfs.c
+index 056b171a848e..8a15f6659caf 100644
+--- a/fs/statfs.c
++++ b/fs/statfs.c
+@@ -10,9 +10,11 @@
+ #include <linux/uaccess.h>
+ #include <linux/compat.h>
+ #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
++#ifndef __GENKSYMS__
+ #include <linux/susfs_def.h>
+ #include "mount.h"
+ #endif
++#endif
+ #include "internal.h"
+ 
+ static int flags_by_mnt(int mnt_flags)
