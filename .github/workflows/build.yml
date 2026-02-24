@@ -51,6 +51,13 @@ on:
           - "6.1"
           - "5.10"
 
+      STATUS:
+        description: Run type
+        default: "RELEASE"
+        type: choice
+        options:
+          - "RELEASE"
+          - "BETA"
 env:
   MAN_DISABLE: true
   DEBIAN_FRONTEND: noninteractive
@@ -65,21 +72,10 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Determine Build Status
-        run: |
-          if [ -n "${{ inputs.STATUS }}" ]; then
-            echo "STATUS=${{ inputs.STATUS }}" >> $GITHUB_ENV
-          elif [ "${{ toJson(github.event.inputs) }}" == "null" ]; then
-            echo "STATUS=RELEASE" >> $GITHUB_ENV
-          else
-            echo "STATUS=RELEASE" >> $GITHUB_ENV
-          fi
-
       - name: Validate Inputs and Secrets
         env:
           #TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
           #TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
-          #GH_TOKEN: ${{ secrets.GH_TOKEN }} # github token
           KSU: ${{ inputs.KSU }}
           KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
@@ -95,11 +91,7 @@ jobs:
           if [[ $KSU == "no" && $KSU_SUSFS == "true" ]]; then
               _error "Cannot use SuSFS without KernelSU"
           fi
-          # ReSukiSU membutuhkan SUSFS aktif untuk patch kompatibilitas 6.1/6.6
-          if [[ $KSU == "resukisu" && $KSU_SUSFS != "true" ]]; then
-              _error "ReSukiSU build requires KSU_SUSFS to be true"
-          fi
-
+          
           if [[ $ret -gt 0 ]]; then
             exit $ret
           fi
@@ -114,14 +106,13 @@ jobs:
         env:
           #TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
           #TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
-          #GH_TOKEN: ${{ secrets.GH_TOKEN }} # github token
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
           KSU: ${{ inputs.KSU }}
           KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
           LAST_BUILD: ${{ inputs.LAST_BUILD }}
           TODO: ${{ inputs.TODO }}
-          STATUS: ${{ env.STATUS }} # Mengambil nilai dari step Determine Build Status
-          KVER: ${{ inputs.KERNEL_VERSION }} # This passes the version to the script
+          STATUS: ${{ inputs.STATUS }}
+          KVER: ${{ inputs.KERNEL_VERSION }}
         run: |
           export GIT_CLONE_PROTECTION_ACTIVE=false
           chmod +x *.sh py/*.py

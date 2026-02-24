@@ -203,8 +203,9 @@ fi
 
 # Upload defconfig if we are doing defconfig
 if [[ $TODO == "defconfig" ]]; then
-  log "Uploading defconfig..."
-  upload_file $OUTDIR/.config
+  log "Copying defconfig..."
+  mkdir -p "$WORKDIR/artifacts"
+  cp "$OUTDIR/.config" "$WORKDIR/artifacts/config-${VARIANT}.txt"
   exit 0
 fi
 
