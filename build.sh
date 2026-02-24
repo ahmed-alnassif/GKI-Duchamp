@@ -262,8 +262,12 @@ fi
 # Zip the anykernel
 cd anykernel
 log "Zipping anykernel..."
-cp $KERNEL_IMAGE .
-zip -r9 $WORKDIR/$AK3_ZIP_NAME ./*
+if [ ! -f "$KERNEL_IMAGE" ];then
+  echo "$KERNEL_IMAGE not found."
+  exit 1
+fi
+cp "$KERNEL_IMAGE" .
+zip -r9 "$WORKDIR/$AK3_ZIP_NAME" ./*
 cd $OLDPWD
 
 if [ "$STATUS" != "BETA" ]; then
