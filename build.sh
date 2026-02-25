@@ -22,17 +22,6 @@ fi
 
 DEFCONFIG_TO_MERGE=""
 GKI_RELEASES_REPO="https://github.com/ahmed-alnassif/GKI-Duchamp"
-#Change the clang by removing the (#) sign then apply
-#CLANG_URL="https://github.com/linastorvaldz/idk/releases/download/clang-r547379/clang.tgz"
-#CLANG_URL="https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b/archive/refs/heads/lineage-20.0.tar.gz"
-#CLANG_URL="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main-kernel-2025/clang-r536225.tar.gz"
-#CLANG_URL="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/62cdcefa89e31af2d72c366e8b5ef8db84caea62/clang-r547379.tar.gz"
-#CLANG_URL="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/105aba85d97a53d364585ca755752dae054b49e8/clang-r584948b.tar.gz"
-CLANG_URL="https://github.com/greenforce-project/greenforce_clang/releases/download/20260210/gf-clang-23.0.0-20260210.tar.gz"
-#CLANG_URL="https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/42d2c090c14c9c7f4dfd365ae551e2b959dc775c/clang-r584948b.tar.gz"
-#CLANG_URL="https://github.com/linastorvaldz/gki-builder/releases/download/clang-r487747c/clang-r487747c.tar.gz"
-#CLANG_URL="$(./clang.sh slim)"
-CLANG_BRANCH=""
 AK3_ZIP_NAME="$KERNEL_NAME-REL-KVER-VARIANT-BUILD_DATE.zip"
 OUTDIR="$WORKDIR/out"
 KSRC="$WORKDIR/ksrc"
@@ -73,34 +62,12 @@ AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
 AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
 
 # Download Clang
-CLANG_DIR="$WORKDIR/clang"
-CLANG_BIN="${CLANG_DIR}/bin"
-if [ -z "$CLANG_BRANCH" ]; then
-  log "🔽 Downloading Clang..."
-  wget -qO clang-archive "$CLANG_URL"
-  mkdir -p "$CLANG_DIR"
-  case "$(basename $CLANG_URL)" in
-    *.tar.* | *.tgz)
-      tar -xf clang-archive -C "$CLANG_DIR"
-      ;;
-    *.7z)
-      7z x clang-archive -o${CLANG_DIR}/ -bd -y > /dev/null
-      ;;
-    *)
-      error "Unsupported file format"
-      ;;
-  esac
-  rm clang-archive
-
-  if [ $(find "$CLANG_DIR" -mindepth 1 -maxdepth 1 -type d | wc -l) -eq 1 ] \
-    && [ $(find "$CLANG_DIR" -mindepth 1 -maxdepth 1 -type f | wc -l) -eq 0 ]; then
-    SINGLE_DIR=$(find "$CLANG_DIR" -mindepth 1 -maxdepth 1 -type d)
-    mv $SINGLE_DIR/* $CLANG_DIR/
-    rm -rf $SINGLE_DIR
-  fi
-else
-  log "🔽 Cloning Clang..."
-  git clone --depth=1 -q "$CLANG_URL" -b "$CLANG_BRANCH" "$CLANG_DIR"
+log "Downloading Clang..."
+CLANG_BIN="$(pwd)/greenforce-clang/bin"
+bash <(wget -qO- https://raw.githubusercontent.com/greenforce-project/greenforce_clang/refs/heads/main/get_clang.sh)
+if [ ! -d "$CLANG_BIN" ]; then
+    echo "Error: Clang not found in ${CLANG_BIN}."
+    exit 1
 fi
 
 # Clone GNU Assembler
