@@ -2,7 +2,6 @@
 
 # Constants
 WORKDIR="$(pwd)"
-RELEASE="$(date +v%y.%m.%d)"
 
 KERNEL_NAME="GKID"
 USER="ahmed-alnassif"
@@ -36,6 +35,8 @@ echo "RELEASE=$RELEASE" >> $GITHUB_ENV
 
 # Set timezone
 sudo timedatectl set-timezone "$TIMEZONE" || export TZ="$TIMEZONE"
+
+RELEASE="$(date +v%y.%m.%d)"
 
 # Clone kernel source
 log "Cloning kernel source from $(simplify_gh_url "$KERNEL_REPO")"
