@@ -4,9 +4,9 @@
 WORKDIR="$(pwd)"
 RELEASE="$(date +v%y.%m.%d)"
 
-KERNEL_NAME="GKIDuchamp"
+KERNEL_NAME="GKID"
 USER="ahmed-alnassif"
-HOST="$KERNEL_NAME"
+HOST="GKI-Duchamp"
 TIMEZONE="Asia/Damascus"
 ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AnyKernel3"
 
@@ -20,7 +20,6 @@ else
   exit 1
 fi
 
-DEFCONFIG_TO_MERGE=""
 GKI_RELEASES_REPO="https://github.com/ahmed-alnassif/GKI-Duchamp"
 AK3_ZIP_NAME="$KERNEL_NAME-REL-KVER-VARIANT-BUILD_DATE.zip"
 OUTDIR="$WORKDIR/out"
@@ -52,7 +51,7 @@ cd $WORKDIR
 # Set Kernel variant
 log "Setting Kernel variant..."
 case "$KSU" in
-  "yes") VARIANT="KSU" ;;
+  "yes") VARIANT="SukiSU-Ultra" ;;
   "no") VARIANT="VNL" ;;
 esac
 susfs_included && VARIANT+="+SuSFS"
@@ -114,7 +113,7 @@ SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -
 
 echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
-log "Patching custom KSU & SuSFS configs from GitHub..."
+log "Patching custom KSU & SuSFS configs..."
 export KSU
 export KSU_SUSFS
 source $WORKDIR/patches/gki_defconfig.sh
@@ -137,26 +136,14 @@ export KBUILD_BUILD_USER="$USER"
 export KBUILD_BUILD_HOST="$HOST"
 export KBUILD_BUILD_TIMESTAMP=$(date)
 export KCFLAGS="-w"
-if [ $(echo "$LINUX_VERSION_CODE" | head -c1) -eq 6 ]; then
-  MAKE_ARGS=(
-    LLVM=1
-    ARCH=arm64
-    CROSS_COMPILE=aarch64-linux-gnu-
-    CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
-    -j$(nproc --all)
-    O=$OUTDIR
-  )
-else
-  MAKE_ARGS=(
-    LLVM=1
-    LLVM_IAS=1
-    ARCH=arm64
-    CROSS_COMPILE=aarch64-linux-gnu-
-    CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
-    -j$(nproc --all)
-    O=$OUTDIR
-  )
-fi
+MAKE_ARGS=(
+  LLVM=1
+  ARCH=arm64
+  CROSS_COMPILE=aarch64-linux-gnu-
+  CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
+  -j$(nproc --all)
+  O=$OUTDIR
+)
 
 KERNEL_IMAGE="$OUTDIR/arch/arm64/boot/Image"
 MODULE_SYMVERS="$OUTDIR/Module.symvers"
@@ -164,19 +151,7 @@ KMI_CHECK="$WORKDIR/py/kmi-check-6.x.py"
 
 ## Build GKI
 log "Generating config..."
-make ${MAKE_ARGS[@]} $KERNEL_DEFCONFIG
-
-if [ "$DEFCONFIG_TO_MERGE" ]; then
-  log "Merging configs..."
-  if [ -f "scripts/kconfig/merge_config.sh" ]; then
-    for config in $DEFCONFIG_TO_MERGE; do
-      make ${MAKE_ARGS[@]} scripts/kconfig/merge_config.sh $config
-    done
-  else
-    error "scripts/kconfig/merge_config.sh does not exist in the kernel source"
-  fi
-  make ${MAKE_ARGS[@]} olddefconfig
-fi
+make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 
 # SUSFS debugging
 if susfs_included; then
