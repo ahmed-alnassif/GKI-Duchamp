@@ -110,8 +110,6 @@ void susfs_reorder_mnt_id(void)
 EXPORT_SYMBOL(susfs_reorder_mnt_id);
 EOF
 
-#patch -p1 < $KERNEL_PATCHES/susfs/fs_proc_base.c-fix-k6.1.patch || echo "Additional fix patch failed."
-
 SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
 echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
