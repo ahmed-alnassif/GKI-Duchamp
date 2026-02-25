@@ -63,7 +63,7 @@ AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
 
 # Download Clang
 log "Downloading Clang..."
-CLANG_BIN="$(pwd)/greenforce-clang/bin"
+CLANG_BIN="$WORKDIR/greenforce-clang/bin"
 bash <(wget -qO- https://raw.githubusercontent.com/greenforce-project/greenforce_clang/refs/heads/main/get_clang.sh)
 if [ ! -d "$CLANG_BIN" ]; then
     echo "Error: Clang not found in ${CLANG_BIN}."
