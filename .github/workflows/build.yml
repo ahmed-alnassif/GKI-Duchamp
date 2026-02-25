@@ -165,10 +165,20 @@ jobs:
             - 🔖 **Version:** ${{ env.LINUX_VERSION }} (android14-6.1-lts)
             - 🔰 **Variant:** SukiSU Ultra
             - 🛡️ **SuSFS:** ඞ ${{ env.SUSFS_VERSION }}
+            - ⚙️ **Compiler:** ${{ env.COMPILER_STRING }}
             
+            **Performance & Efficiency Tweaks**
+            Balanced optimizations for smoother UI, better multitasking & gaming on Poco X6 Pro (and similar **6.1.xx-android14** GKI kernel devices):
+
+            - Timer frequency **HZ=300** → noticeably lower input lag & snappier feel
+            - CPU governors: **schedutil** + **ondemand** → efficient & responsive scaling
+            - Modern memory: **Multi-Gen LRU (MGLRU)** enabled → huge multitasking & battery win
+            - zRAM: compressed swap with **LZ4** + **writeback** + tracking → more usable RAM in heavy use
+            - I/O scheduler: **mq-deadline** as default → low-latency on fast UFS 4.0 storage
+            - Networking: **TCP BBR** + **FQ** + **ECN** → better speed on WiFi/mobile data
+            - Filesystem extras: F2FS support
+
             ---
-            **Compiler:** ${{ env.COMPILER_STRING }}
-            
             **Checksums:**
             ```
             ${{ env.CHECKSUMS }}
