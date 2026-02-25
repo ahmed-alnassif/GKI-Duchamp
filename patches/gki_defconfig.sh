@@ -67,4 +67,6 @@ CONFIG_F2FS_FS_COMPRESSION=y
 # Memory management improvements
 CONFIG_LRU_GEN=y
 CONFIG_LRU_GEN_ENABLED=y
+# Networking extras
+CONFIG_TCP_ECN=y
 EOF
