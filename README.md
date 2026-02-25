@@ -5,7 +5,7 @@ A GKI kernel featuring SukiSU Ultra and SUSFS support.
 ## Features
 - SukiSU Ultra built-in
 - SUSFS integration
-- Optimized for performance
+- Optimized for performance & battery life
 - Regular updates
 
 ## Compatibility
