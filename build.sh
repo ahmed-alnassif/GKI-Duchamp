@@ -57,7 +57,7 @@ case "$KSU" in
 esac
 susfs_included && VARIANT+="+SuSFS"
 
-# Changelog of repos
+log "Changelog of repos"
 gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])' > sukisu_changelog.txt
 
 # Replace Placeholder in zip name

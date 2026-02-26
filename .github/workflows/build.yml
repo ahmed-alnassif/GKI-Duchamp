@@ -102,6 +102,7 @@ jobs:
 
       - name: Run Build Script
         env:
+          GH_TOKEN: ${{ github.token }}
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
           KSU: ${{ inputs.KSU }}
           KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
@@ -169,7 +170,11 @@ jobs:
             **SukiSU Ultra Changelog (last 10 commits):**
             EOF
             echo ""
-            cat sukisu_changelog.txt || echo "No changelog available"
+            if [ -f sukisu_changelog.txt ]; then
+              cat sukisu_changelog.txt
+            else
+              echo "*No changelog available*"
+            fi
             echo ""
             echo "**Full Commit History:** [Browse all commits](https://github.com/SukiSU-Ultra/SukiSU-Ultra/commits/builtin)"
             echo ""
