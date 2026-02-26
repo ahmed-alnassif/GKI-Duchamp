@@ -74,8 +74,6 @@ jobs:
 
       - name: Validate Inputs and Secrets
         env:
-          #TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
-          #TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
           KSU: ${{ inputs.KSU }}
           KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
@@ -104,8 +102,6 @@ jobs:
 
       - name: Run Build Script
         env:
-          #TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
-          #TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
           KSU: ${{ inputs.KSU }}
           KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
@@ -144,20 +140,11 @@ jobs:
           CHECKSUMS="${CHECKSUMS//$'\r'/'%0D'}"
           echo "CHECKSUMS=$CHECKSUMS" >> $GITHUB_ENV
 
-
-      - name: Upload All Builds to release repo
+      - name: Prepare release body
         if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
-        uses: softprops/action-gh-release@v2
-        with:
-          repository: ${{ env.RELEASE_REPO }}
-          name: ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
-          tag_name: ${{ env.RELEASE }}-r${{ github.run_number }}
-          prerelease: true
-          files: |
-            artifacts/*.zip
-            artifacts/checksums.txt
-            artifacts/checksums-md5.txt
-          body: |
+        run: |
+            {
+            cat << EOF
             ### 📢 ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
             
             **Build Information:**
@@ -179,9 +166,30 @@ jobs:
             - Filesystem extras: F2FS support
 
             ---
-            **Checksums:**
-            ```
-            ${{ env.CHECKSUMS }}
-            ```
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Built-in token, no need to set manually
+            **SukiSU Ultra Changelog (last 10 commits):**
+            EOF
+            echo ""
+            cat sukisu_changelog.txt || echo "No changelog available"
+            echo ""
+            echo "**Full Commit History:** [Browse all commits](https://github.com/SukiSU-Ultra/SukiSU-Ultra/commits/builtin)"
+            echo ""
+            echo "---"
+            echo "**Checksums:**"
+            echo '```'
+            echo "${{ env.CHECKSUMS }}"
+            echo '```'
+            } > release_body.md
+
+      - name: Upload All Builds to release repo
+        if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: ${{ env.RELEASE_REPO }}
+          name: ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
+          tag_name: ${{ env.RELEASE }}-r${{ github.run_number }}
+          prerelease: true
+          files: |
+            artifacts/*.zip
+            artifacts/checksums.txt
+            artifacts/checksums-md5.txt
+          body_path: release_body.md
