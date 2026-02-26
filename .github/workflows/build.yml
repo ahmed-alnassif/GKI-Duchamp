@@ -167,8 +167,19 @@ jobs:
             - Filesystem extras: F2FS support
 
             ---
-            **SukiSU Ultra Changelog (last 10 commits):**
+            **Android14-6.1-LTS Kernel Changelog (last 10 commits):**
             EOF
+            echo ""
+            if [ -f android_kernel-6.1_changelog.txt ]; then
+              cat android_kernel-6.1_changelog.txt
+            else
+              echo "*No changelog available*"
+            fi
+            echo ""
+            echo "**Full Commit History:** [Browse all commits](https://github.com/ramabondanp/android_kernel_common-6.1/commits/android14-6.1-staging)"
+            echo ""
+            echo "---"
+            echo "**SukiSU Ultra Changelog (last 10 commits):**"
             echo ""
             if [ -f sukisu_changelog.txt ]; then
               cat sukisu_changelog.txt

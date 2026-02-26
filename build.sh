@@ -58,6 +58,7 @@ esac
 susfs_included && VARIANT+="+SuSFS"
 
 log "Changelog of repos"
+gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])' > android_kernel-6.1_changelog.txt
 gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])' > sukisu_changelog.txt
 
 # Replace Placeholder in zip name
