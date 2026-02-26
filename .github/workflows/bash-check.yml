@@ -1,0 +1,30 @@
+name: Bash Syntax Check
+
+on: [push, pull_request]
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Find and check bash scripts
+      run: |
+        echo "🔍 Checking bash scripts for syntax errors..."
+        ERROR=0
+        
+        # Find all .sh and .bash files
+        while IFS= read -r script; do
+          echo -n "Checking $script ... "
+          if bash -n "$script" 2>/dev/null; then
+            echo "✅ OK"
+          else
+            echo "❌ ERROR"
+            bash -n "$script" 2>&1 | sed 's/^/   /'
+            ERROR=1
+          fi
+        done < <(find . -name "*.sh" -o -name "*.bash" -type f)
+        
+        exit $ERROR

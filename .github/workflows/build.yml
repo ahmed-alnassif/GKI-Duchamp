@@ -1,0 +1,187 @@
+name: GKI-Duchamp Builder
+
+on:
+  workflow_call:
+    inputs:
+      TODO:
+        type: string
+      KSU:
+        type: string
+      KSU_SUSFS:
+        type: string
+      LAST_BUILD:
+        type: string
+      KERNEL_VERSION:
+        type: string
+      STATUS:
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      TODO:
+        description: To do
+        default: ""
+        type: choice
+        options:
+          - "kernel"
+          - "defconfig"
+
+      KSU:
+        description: KernelSU Type
+        default: "yes"
+        type: choice
+        options:
+          - "no"
+          - "yes"
+
+      KSU_SUSFS:
+        description: Include SUSFS?
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+      KERNEL_VERSION:
+        description: Which kernel version do you want to build?
+        default: "6.1"
+        type: choice
+        options:
+          - "6.6"
+          - "6.1"
+          - "5.10"
+
+      STATUS:
+        description: Run type
+        default: "RELEASE"
+        type: choice
+        options:
+          - "RELEASE"
+          - "BETA"
+env:
+  MAN_DISABLE: true
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Validate Inputs and Secrets
+        env:
+          #TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
+          #TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
+          KSU: ${{ inputs.KSU }}
+          KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
+          KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
+        run: |
+          _error() {
+              echo "❌ ERROR: $*"
+              let ret++
+          }
+
+          ret=0
+
+          # KernelSU Validation (Supports yes, no, resukisu)
+          if [[ $KSU == "no" && $KSU_SUSFS == "true" ]]; then
+              _error "Cannot use SuSFS without KernelSU"
+          fi
+          
+          if [[ $ret -gt 0 ]]; then
+            exit $ret
+          fi
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh bc bison flex libssl-dev libelf-dev dwarves cpio
+          pip install lxml
+
+      - name: Run Build Script
+        env:
+          #TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
+          #TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
+          KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
+          KSU: ${{ inputs.KSU }}
+          KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
+          LAST_BUILD: ${{ inputs.LAST_BUILD }}
+          TODO: ${{ inputs.TODO }}
+          STATUS: ${{ inputs.STATUS }}
+          KVER: ${{ inputs.KERNEL_VERSION }}
+        run: |
+          export GIT_CLONE_PROTECTION_ACTIVE=false
+          chmod +x *.sh py/*.py
+          ./build.sh
+
+      - name: Upload Artifacts (ZIP & IMG)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BASE_NAME }}-${{ github.run_number }}
+          path: |
+            artifacts/*.zip
+            artifacts/*.img
+
+      - name: Upload Artifacts (Info File)
+        uses: actions/upload-artifact@v4
+        with:
+          name: info-${{ github.run_number }}
+          path: artifacts/*.txt
+
+      - name: Generate Checksums
+        if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
+        run: |
+          cd artifacts
+          sha256sum *.zip > checksums.txt
+          md5sum *.zip > checksums-md5.txt
+          CHECKSUMS=$(cat checksums.txt)
+          CHECKSUMS="${CHECKSUMS//'%'/'%25'}"
+          CHECKSUMS="${CHECKSUMS//$'\n'/'%0A'}"
+          CHECKSUMS="${CHECKSUMS//$'\r'/'%0D'}"
+          echo "CHECKSUMS=$CHECKSUMS" >> $GITHUB_ENV
+
+
+      - name: Upload All Builds to release repo
+        if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: ${{ env.RELEASE_REPO }}
+          name: ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
+          tag_name: ${{ env.RELEASE }}-r${{ github.run_number }}
+          prerelease: true
+          files: |
+            artifacts/*.zip
+            artifacts/checksums.txt
+            artifacts/checksums-md5.txt
+          body: |
+            ### 📢 ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
+            
+            **Build Information:**
+            - 🐧 **Kernel:** ${{ env.KERNEL_NAME }}
+            - 🔖 **Version:** ${{ env.LINUX_VERSION }} (android14-6.1-lts)
+            - 🔰 **Variant:** SukiSU Ultra
+            - 🛡️ **SuSFS:** ඞ ${{ env.SUSFS_VERSION }}
+            - ⚙️ **Compiler:** ${{ env.COMPILER_STRING }}
+            
+            **Performance & Efficiency Tweaks**
+            Balanced optimizations for smoother UI, better multitasking & gaming on Poco X6 Pro (and similar **6.1.xx-android14** GKI kernel devices):
+
+            - Timer frequency **HZ=300** → noticeably lower input lag & snappier feel
+            - CPU governors: **schedutil** + **ondemand** → efficient & responsive scaling
+            - Modern memory: **Multi-Gen LRU (MGLRU)** enabled → huge multitasking & battery win
+            - zRAM: compressed swap with **LZ4** + **writeback** + tracking → more usable RAM in heavy use
+            - I/O scheduler: **mq-deadline** as default → low-latency on fast UFS 4.0 storage
+            - Networking: **TCP BBR** + **FQ** + **ECN** → better speed on WiFi/mobile data
+            - Filesystem extras: F2FS support
+
+            ---
+            **Checksums:**
+            ```
+            ${{ env.CHECKSUMS }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Built-in token, no need to set manually
