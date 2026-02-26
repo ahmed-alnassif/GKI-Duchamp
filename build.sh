@@ -119,9 +119,11 @@ SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -
 echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
 # Test
-mkdir -p "$WORKDIR/artifacts"
-echo test > "$WORKDIR/artifacts/test.zip"
-exit 0
+if [ "$TEST" = "yes" ]; then
+  mkdir -p "$WORKDIR/artifacts"
+  echo test > "$WORKDIR/artifacts/test.zip"
+  exit 0
+fi
 
 log "Patching custom KSU & SuSFS configs..."
 export KSU

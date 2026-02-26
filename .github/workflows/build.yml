@@ -15,12 +15,14 @@ on:
         type: string
       STATUS:
         type: string
+      TEST:
+        type: string
 
   workflow_dispatch:
     inputs:
       TODO:
         description: To do
-        default: ""
+        default: "kernel"
         type: choice
         options:
           - "kernel"
@@ -58,6 +60,14 @@ on:
         options:
           - "RELEASE"
           - "BETA"
+
+      TEST:
+        description: debug the pipeline
+        default: "no"
+        type: choice
+        options:
+          - "no"
+          - "yes"
 env:
   MAN_DISABLE: true
   DEBIAN_FRONTEND: noninteractive
@@ -109,6 +119,7 @@ jobs:
           LAST_BUILD: ${{ inputs.LAST_BUILD }}
           TODO: ${{ inputs.TODO }}
           STATUS: ${{ inputs.STATUS }}
+          TEST: ${{ inputs.TEST }}
           KVER: ${{ inputs.KERNEL_VERSION }}
         run: |
           export GIT_CLONE_PROTECTION_ACTIVE=false
