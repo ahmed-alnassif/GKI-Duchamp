@@ -19,6 +19,11 @@ else
   exit 1
 fi
 
+# Set timezone
+sudo timedatectl set-timezone "$TIMEZONE" || export TZ="$TIMEZONE"
+
+RELEASE="$(date +v%y.%m.%d)"
+
 GKI_RELEASES_REPO="https://github.com/ahmed-alnassif/GKI-Duchamp"
 AK3_ZIP_NAME="$KERNEL_NAME-REL-KVER-VARIANT-BUILD_DATE.zip"
 OUTDIR="$WORKDIR/out"
@@ -32,11 +37,6 @@ echo "RELEASE_REPO=$(simplify_gh_url "$GKI_RELEASES_REPO")" >> $GITHUB_ENV
 echo "KERNEL_NAME=$KERNEL_NAME" >> $GITHUB_ENV
 echo "RELEASE_NAME=$KERNEL_NAME $RELEASE" >> $GITHUB_ENV
 echo "RELEASE=$RELEASE" >> $GITHUB_ENV
-
-# Set timezone
-sudo timedatectl set-timezone "$TIMEZONE" || export TZ="$TIMEZONE"
-
-RELEASE="$(date +v%y.%m.%d)"
 
 # Clone kernel source
 log "Cloning kernel source from $(simplify_gh_url "$KERNEL_REPO")"
