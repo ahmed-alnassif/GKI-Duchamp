@@ -2,6 +2,7 @@
 
 # Constants
 WORKDIR="$(pwd)"
+RELEASE_DIR="$WORKDIR/artifacts"
 
 KERNEL_NAME="GKID"
 USER="ahmed-alnassif"
@@ -23,6 +24,8 @@ fi
 sudo timedatectl set-timezone "$TIMEZONE" || export TZ="$TIMEZONE"
 
 RELEASE="$(date +v%y.%m.%d)"
+
+mkdir -p $RELEASE_DIR
 
 GKI_RELEASES_REPO="https://github.com/ahmed-alnassif/GKI-Duchamp"
 AK3_ZIP_NAME="$KERNEL_NAME-REL-KVER-VARIANT-BUILD_DATE.zip"
@@ -53,13 +56,15 @@ cd $WORKDIR
 log "Setting Kernel variant..."
 case "$KSU" in
   "yes") VARIANT="SukiSU-Ultra" ;;
-  "no") VARIANT="VNL" ;;
+  "no") VARIANT="Vanilla" ;;
 esac
 susfs_included && VARIANT+="+SuSFS"
 
 log "Changelog of repos"
-gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])' > android_kernel-6.1_changelog.txt
-gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])' > sukisu_changelog.txt
+gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+> "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
+gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+> "$RELEASE_DIR/sukisu_changelog.txt"
 
 # Replace Placeholder in zip name
 AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
@@ -90,20 +95,24 @@ echo "COMPILER_STRING=$COMPILER_STRING" >> $GITHUB_ENV
 
 cd $KSRC
 
-curl -LSs "https://raw.githubusercontent.com/ahmed-alnassif/SukiSU-Ultra/builtin/kernel/setup.sh" | bash -s builtin
+if [ "$KSU" = "yes" ]; then
+  log "SukiSU-Ultra included"
+  curl -LSs "https://raw.githubusercontent.com/ahmed-alnassif/SukiSU-Ultra/builtin/kernel/setup.sh" | bash -s builtin
 
-SUSFS_DIR="$WORKDIR/susfs"
-SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-SUSFS_BRANCH="gki-android14-6.1"
-git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+  if susfs_included; then
+    log "SUSFS included"
+    SUSFS_DIR="$WORKDIR/susfs"
+    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
+    SUSFS_BRANCH="gki-android14-6.1"
+    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
-cp -R $SUSFS_PATCHES/fs/* ./fs
-cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
+    cp -R $SUSFS_PATCHES/fs/* ./fs
+    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
-patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
 
-# Add the stub at the end of susfs.c
-cat >> fs/susfs.c << 'EOF'
+    # Add the stub at the end of susfs.c
+    cat >> fs/susfs.c << 'EOF'
 
 /* Added for SukiSU compatibility */
 void susfs_reorder_mnt_id(void)
@@ -114,14 +123,19 @@ void susfs_reorder_mnt_id(void)
 EXPORT_SYMBOL(susfs_reorder_mnt_id);
 EOF
 
-SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
+   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
-echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+
+  fi
+
+fi
 
 # Test
 if [ "$TEST" = "yes" ]; then
-  mkdir -p "$WORKDIR/artifacts"
-  echo test > "$WORKDIR/artifacts/test.zip"
+  log pipeline test done
+  mkdir -p "$RELEASE_DIR"
+  echo test > "$RELEASE_DIR/test-${VARIANT}.zip"
   exit 0
 fi
 
@@ -160,7 +174,7 @@ KMI_CHECK="$WORKDIR/py/kmi-check-6.x.py"
 log "Generating config..."
 make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 
-log "Patching custom KSU & SuSFS configs..."
+log "Patching custom configs..."
 export OUTDIR
 export KSU
 export KSU_SUSFS
@@ -191,11 +205,10 @@ if susfs_included; then
 
 fi
 
-# Upload defconfig if we are doing defconfig
 if [[ $TODO == "defconfig" ]]; then
   log "Copying defconfig..."
-  mkdir -p "$WORKDIR/artifacts"
-  cp "$OUTDIR/.config" "$WORKDIR/artifacts/config-${VARIANT}.txt"
+  mkdir -p "$RELEASE_DIR"
+  cp "$OUTDIR/.config" "$RELEASE_DIR/config-${VARIANT}.txt"
   exit 0
 fi
 
@@ -243,8 +256,8 @@ cd $OLDPWD
 
 if [ "$STATUS" != "BETA" ]; then
   echo "BASE_NAME=$KERNEL_NAME-$VARIANT" >> $GITHUB_ENV
-  mkdir -p $WORKDIR/artifacts
-  mv $WORKDIR/*.zip $WORKDIR/artifacts
+  mkdir -p $RELEASE_DIR
+  mv $WORKDIR/*.zip $RELEASE_DIR
 fi
 
 if [ "$STATUS" != "BETA" ]; then
@@ -253,7 +266,7 @@ if [ "$STATUS" != "BETA" ]; then
     echo "SUSFS_VERSION=$(curl -s https://gitlab.com/simonpunk/susfs4ksu/raw/gki-android14-6.1/kernel_patches/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g')"
     echo "KERNEL_NAME=$KERNEL_NAME"
     echo "RELEASE_REPO=$(simplify_gh_url "$GKI_RELEASES_REPO")"
-  ) >> $WORKDIR/artifacts/info.txt
+  ) >> $RELEASE_DIR/info.txt
 fi
 
 exit 0

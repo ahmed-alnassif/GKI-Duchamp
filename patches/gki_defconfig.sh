@@ -3,13 +3,14 @@
 # Define target defconfig location
 DEFCONFIG="$OUTDIR/.config"
 
-echo "⚙️ Added KSU & SuSFS configuration"
-
-# Base KSU Config & Dependencies
-cat >> $DEFCONFIG <<EOF
+if [ "$KSU" = "yes" ]; then
+  # Base KSU Config & Dependencies
+  echo "⚙️ Added KSU configuration"
+  cat >> $DEFCONFIG <<EOF
 CONFIG_KSU=y
 CONFIG_KPM=y
 EOF
+fi
 
 if [ "$KSU_SUSFS" = "true" ]; then
   echo "🔧 Mode: SuSFS Hook Enabled"
