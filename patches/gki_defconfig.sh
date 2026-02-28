@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Define target defconfig location
-DEFCONFIG="$OUTDIR/.config"
+DEFCONFIG="arch/arm64/configs/gki_defconfig"
 
 if [ "$KSU" = "yes" ]; then
   # Base KSU Config & Dependencies

@@ -139,6 +139,11 @@ if [ "$TEST" = "yes" ]; then
   exit 0
 fi
 
+log "Patching custom configs..."
+export KSU
+export KSU_SUSFS
+source $WORKDIR/patches/gki_defconfig.sh
+
 # set localversion
 if [ "${TODO:-kernel}" = "kernel" ]; then
   LATEST_COMMIT_HASH=$(git rev-parse --short HEAD)
@@ -174,15 +179,6 @@ KMI_CHECK="$WORKDIR/py/kmi-check-6.x.py"
 log "Generating config..."
 make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 
-log "Patching custom configs..."
-export OUTDIR
-export KSU
-export KSU_SUSFS
-source $WORKDIR/patches/gki_defconfig.sh
-
-# Update dependencies
-log "Updating dependencies..."
-make ${MAKE_ARGS[@]} olddefconfig
 
 # SUSFS debugging
 if susfs_included; then
