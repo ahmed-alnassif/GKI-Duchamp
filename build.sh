@@ -8,12 +8,11 @@ KERNEL_NAME="GKID"
 USER="ahmed-alnassif"
 HOST="GKI-Duchamp"
 TIMEZONE="Asia/Damascus"
-ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AnyKernel3"
+ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AK3-GKID"
 
 KERNEL_DEFCONFIG="gki_defconfig"
 
 if [ "$KVER" == "6.1" ]; then
-  ANYKERNEL_BRANCH="master"
   KERNEL_BRANCH="android14-6.1-staging"
 else
   echo "Unsupported kernel existing..."
@@ -221,7 +220,7 @@ cd $WORKDIR
 
 # Clone AnyKernel
 log "Cloning anykernel from $(simplify_gh_url "$ANYKERNEL_REPO")"
-git clone -q --depth=1 $ANYKERNEL_REPO -b $ANYKERNEL_BRANCH anykernel
+git clone -q --depth=1 $ANYKERNEL_REPO anykernel
 
 # Set kernel string in anykernel
 if [ $STATUS == "BETA" ]; then
