@@ -8,12 +8,11 @@ KERNEL_NAME="GKID"
 USER="ahmed-alnassif"
 HOST="GKI-Duchamp"
 TIMEZONE="Asia/Damascus"
-ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AnyKernel3"
+ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AK3-GKID"
 
 KERNEL_DEFCONFIG="gki_defconfig"
 
 if [ "$KVER" == "6.1" ]; then
-  ANYKERNEL_BRANCH="master"
   KERNEL_BRANCH="android14-6.1-staging"
 else
   echo "Unsupported kernel existing..."
@@ -139,6 +138,11 @@ if [ "$TEST" = "yes" ]; then
   exit 0
 fi
 
+log "Patching custom configs..."
+export KSU
+export KSU_SUSFS
+source $WORKDIR/patches/gki_defconfig.sh
+
 # set localversion
 if [ "${TODO:-kernel}" = "kernel" ]; then
   LATEST_COMMIT_HASH=$(git rev-parse --short HEAD)
@@ -174,15 +178,6 @@ KMI_CHECK="$WORKDIR/py/kmi-check-6.x.py"
 log "Generating config..."
 make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 
-log "Patching custom configs..."
-export OUTDIR
-export KSU
-export KSU_SUSFS
-source $WORKDIR/patches/gki_defconfig.sh
-
-# Update dependencies
-log "Updating dependencies..."
-make ${MAKE_ARGS[@]} olddefconfig
 
 # SUSFS debugging
 if susfs_included; then
@@ -225,7 +220,7 @@ cd $WORKDIR
 
 # Clone AnyKernel
 log "Cloning anykernel from $(simplify_gh_url "$ANYKERNEL_REPO")"
-git clone -q --depth=1 $ANYKERNEL_REPO -b $ANYKERNEL_BRANCH anykernel
+git clone -q --depth=1 $ANYKERNEL_REPO anykernel
 
 # Set kernel string in anykernel
 if [ $STATUS == "BETA" ]; then
