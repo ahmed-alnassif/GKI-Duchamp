@@ -135,7 +135,7 @@ fi
 if [ "$TEST" = "yes" ]; then
   log pipeline test done
   mkdir -p "$RELEASE_DIR"
-  echo test > "$RELEASE_DIR/test-${VARIANT}.zip"
+  echo "test-${VARIANT}" > "$RELEASE_DIR/test-${VARIANT}.zip"
   exit 0
 fi
 

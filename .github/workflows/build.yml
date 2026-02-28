@@ -230,11 +230,6 @@ jobs:
           cd release-artifacts
           sha256sum *.zip > checksums.txt
           md5sum *.zip > checksums-md5.txt
-          CHECKSUMS=$(cat checksums.txt)
-          CHECKSUMS="${CHECKSUMS//'%'/'%25'}"
-          CHECKSUMS="${CHECKSUMS//$'\n'/'%0A'}"
-          CHECKSUMS="${CHECKSUMS//$'\r'/'%0D'}"
-          echo "CHECKSUMS=$CHECKSUMS" >> $GITHUB_ENV
 
       - name: Load environment from builds
         run: |
@@ -280,6 +275,11 @@ jobs:
             VARIANTS=$(ls release-artifacts/*.zip 2>/dev/null | xargs -n1 basename | sed 's/.zip//')
             
             {
+            if [ "${{ inputs.TEST }}" = "yes"  ];then
+              echo ">[!warning]"
+              echo ">This is empty testing release don't download/install anything from here!"
+              echo ""
+            fi
             cat << EOF
             ### 📢 ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
             
@@ -328,7 +328,7 @@ jobs:
             echo "---"
             echo "**Checksums:**"
             echo '```'
-            echo "${{ env.CHECKSUMS }}"
+            cat release-artifacts/checksums.txt
             echo '```'
             } > release_body.md
 
