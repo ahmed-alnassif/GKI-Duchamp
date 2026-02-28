@@ -273,14 +273,15 @@ jobs:
         run: |
             # Get list of built variants
             VARIANTS=$(ls release-artifacts/*.zip 2>/dev/null | xargs -n1 basename | sed 's/.zip//')
-            
-            {
+
             if [ "${{ inputs.TEST }}" = "yes"  ];then
-              cat << EOF
+              cat << 'EOF' > release_body.md
               >[!warning]
               >This is empty testing release don't download/install anything from here!
               EOF
             fi
+
+            {
             cat << EOF
             ### 📢 ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
             
