@@ -2,17 +2,17 @@
 
 # Constants
 WORKDIR="$(pwd)"
+RELEASE_DIR="$WORKDIR/artifacts"
 
 KERNEL_NAME="GKID"
 USER="ahmed-alnassif"
 HOST="GKI-Duchamp"
 TIMEZONE="Asia/Damascus"
-ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AnyKernel3"
+ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AK3-GKID"
 
 KERNEL_DEFCONFIG="gki_defconfig"
 
 if [ "$KVER" == "6.1" ]; then
-  ANYKERNEL_BRANCH="master"
   KERNEL_BRANCH="android14-6.1-staging"
 else
   echo "Unsupported kernel existing..."
@@ -23,6 +23,8 @@ fi
 sudo timedatectl set-timezone "$TIMEZONE" || export TZ="$TIMEZONE"
 
 RELEASE="$(date +v%y.%m.%d)"
+
+mkdir -p $RELEASE_DIR
 
 GKI_RELEASES_REPO="https://github.com/ahmed-alnassif/GKI-Duchamp"
 AK3_ZIP_NAME="$KERNEL_NAME-REL-KVER-VARIANT-BUILD_DATE.zip"
@@ -53,9 +55,15 @@ cd $WORKDIR
 log "Setting Kernel variant..."
 case "$KSU" in
   "yes") VARIANT="SukiSU-Ultra" ;;
-  "no") VARIANT="VNL" ;;
+  "no") VARIANT="Vanilla" ;;
 esac
 susfs_included && VARIANT+="+SuSFS"
+
+log "Changelog of repos"
+gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+> "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
+gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+> "$RELEASE_DIR/sukisu_changelog.txt"
 
 # Replace Placeholder in zip name
 AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
@@ -64,7 +72,7 @@ AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
 # Download Clang
 log "Downloading Clang..."
 CLANG_BIN="$WORKDIR/greenforce-clang/bin"
-bash <(wget -qO- https://raw.githubusercontent.com/greenforce-project/greenforce_clang/refs/heads/main/get_clang.sh)
+wget -qO- https://raw.githubusercontent.com/greenforce-project/greenforce_clang/refs/heads/main/get_clang.sh | bash &> /dev/null
 if [ ! -d "$CLANG_BIN" ]; then
     echo "Error: Clang not found in ${CLANG_BIN}."
     exit 1
@@ -86,20 +94,24 @@ echo "COMPILER_STRING=$COMPILER_STRING" >> $GITHUB_ENV
 
 cd $KSRC
 
-curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s builtin
+if [ "$KSU" = "yes" ]; then
+  log "SukiSU-Ultra included"
+  curl -LSs "https://raw.githubusercontent.com/ahmed-alnassif/SukiSU-Ultra/builtin/kernel/setup.sh" | bash -s builtin
 
-SUSFS_DIR="$WORKDIR/susfs"
-SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-SUSFS_BRANCH="gki-android14-6.1"
-git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+  if susfs_included; then
+    log "SUSFS included"
+    SUSFS_DIR="$WORKDIR/susfs"
+    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
+    SUSFS_BRANCH="gki-android14-6.1"
+    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
-cp -R $SUSFS_PATCHES/fs/* ./fs
-cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
+    cp -R $SUSFS_PATCHES/fs/* ./fs
+    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
-patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
 
-# Add the stub at the end of susfs.c
-cat >> fs/susfs.c << 'EOF'
+    # Add the stub at the end of susfs.c
+    cat >> fs/susfs.c << 'EOF'
 
 /* Added for SukiSU compatibility */
 void susfs_reorder_mnt_id(void)
@@ -110,11 +122,23 @@ void susfs_reorder_mnt_id(void)
 EXPORT_SYMBOL(susfs_reorder_mnt_id);
 EOF
 
-SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
+   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
-echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
-log "Patching custom KSU & SuSFS configs..."
+  fi
+
+fi
+
+# Test
+if [ "$TEST" = "yes" ]; then
+  log pipeline test done
+  mkdir -p "$RELEASE_DIR"
+  echo "test-${VARIANT}" > "$RELEASE_DIR/test-${VARIANT}.zip"
+  exit 0
+fi
+
+log "Patching custom configs..."
 export KSU
 export KSU_SUSFS
 source $WORKDIR/patches/gki_defconfig.sh
@@ -154,12 +178,13 @@ KMI_CHECK="$WORKDIR/py/kmi-check-6.x.py"
 log "Generating config..."
 make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 
+
 # SUSFS debugging
 if susfs_included; then
 
-  log "=== DEBUG: Checking defconfig for SUSFS ==="
-  grep -i susfs ./arch/arm64/configs/gki_defconfig || echo "❌ SUSFS NOT FOUND in defconfig!"
-  echo ""
+  #log "=== DEBUG: Checking defconfig for SUSFS ==="
+  #grep -i susfs ./arch/arm64/configs/gki_defconfig || echo "❌ SUSFS NOT FOUND in defconfig!"
+  #echo ""
 
   # DEBUG: Check if SUSFS made it to .config
   log "=== DEBUG: Checking .config for SUSFS ==="
@@ -175,11 +200,10 @@ if susfs_included; then
 
 fi
 
-# Upload defconfig if we are doing defconfig
 if [[ $TODO == "defconfig" ]]; then
   log "Copying defconfig..."
-  mkdir -p "$WORKDIR/artifacts"
-  cp "$OUTDIR/.config" "$WORKDIR/artifacts/config-${VARIANT}.txt"
+  mkdir -p "$RELEASE_DIR"
+  cp "$OUTDIR/.config" "$RELEASE_DIR/config-${VARIANT}.txt"
   exit 0
 fi
 
@@ -196,7 +220,7 @@ cd $WORKDIR
 
 # Clone AnyKernel
 log "Cloning anykernel from $(simplify_gh_url "$ANYKERNEL_REPO")"
-git clone -q --depth=1 $ANYKERNEL_REPO -b $ANYKERNEL_BRANCH anykernel
+git clone -q --depth=1 $ANYKERNEL_REPO anykernel
 
 # Set kernel string in anykernel
 if [ $STATUS == "BETA" ]; then
@@ -204,13 +228,13 @@ if [ $STATUS == "BETA" ]; then
   AK3_ZIP_NAME=${AK3_ZIP_NAME//BUILD_DATE/$BUILD_DATE}
   AK3_ZIP_NAME=${AK3_ZIP_NAME//-REL/}
   sed -i \
-    "s/kernel.string=.*/kernel.string=${KERNEL_NAME} ${LINUX_VERSION} (${BUILD_DATE}) ${VARIANT}/g" \
+    "s/kernel.string=.*/kernel.string=${KERNEL_NAME} ${LINUX_VERSION} (${BUILD_DATE}) ${VARIANT} by Ahmed Al-Nassif (ahmed-alnassif)/g" \
     $WORKDIR/anykernel/anykernel.sh
 else
   AK3_ZIP_NAME=${AK3_ZIP_NAME//-BUILD_DATE/}
   AK3_ZIP_NAME=${AK3_ZIP_NAME//REL/$RELEASE}
   sed -i \
-    "s/kernel.string=.*/kernel.string=${KERNEL_NAME} ${RELEASE} ${LINUX_VERSION} ${VARIANT}/g" \
+    "s/kernel.string=.*/kernel.string=${KERNEL_NAME} ${RELEASE} ${LINUX_VERSION} ${VARIANT} by Ahmed Al-Nassif (ahmed-alnassif)/g" \
     $WORKDIR/anykernel/anykernel.sh
 fi
 
@@ -227,8 +251,8 @@ cd $OLDPWD
 
 if [ "$STATUS" != "BETA" ]; then
   echo "BASE_NAME=$KERNEL_NAME-$VARIANT" >> $GITHUB_ENV
-  mkdir -p $WORKDIR/artifacts
-  mv $WORKDIR/*.zip $WORKDIR/artifacts
+  mkdir -p $RELEASE_DIR
+  mv $WORKDIR/*.zip $RELEASE_DIR
 fi
 
 if [ "$STATUS" != "BETA" ]; then
@@ -237,7 +261,7 @@ if [ "$STATUS" != "BETA" ]; then
     echo "SUSFS_VERSION=$(curl -s https://gitlab.com/simonpunk/susfs4ksu/raw/gki-android14-6.1/kernel_patches/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g')"
     echo "KERNEL_NAME=$KERNEL_NAME"
     echo "RELEASE_REPO=$(simplify_gh_url "$GKI_RELEASES_REPO")"
-  ) >> $WORKDIR/artifacts/info.txt
+  ) >> $RELEASE_DIR/info.txt
 fi
 
 exit 0

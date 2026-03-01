@@ -15,32 +15,18 @@ on:
         type: string
       STATUS:
         type: string
+      TEST:
+        type: string
 
   workflow_dispatch:
     inputs:
       TODO:
         description: To do
-        default: ""
+        default: "kernel"
         type: choice
         options:
           - "kernel"
           - "defconfig"
-
-      KSU:
-        description: KernelSU Type
-        default: "yes"
-        type: choice
-        options:
-          - "no"
-          - "yes"
-
-      KSU_SUSFS:
-        description: Include SUSFS?
-        default: "true"
-        type: choice
-        options:
-          - "true"
-          - "false"
 
       KERNEL_VERSION:
         description: Which kernel version do you want to build?
@@ -58,14 +44,70 @@ on:
         options:
           - "RELEASE"
           - "BETA"
+
+      TEST:
+        description: debug the pipeline
+        default: "no"
+        type: choice
+        options:
+          - "no"
+          - "yes"
+
+      BUILD_VANILLA:
+        description: "Build Vanilla (no KSU)"
+        type: boolean
+        default: true
+
+      BUILD_KSU:
+        description: "Build with KernelSU"
+        type: boolean
+        default: true
+
+      BUILD_KSU_SUSFS:
+        description: "Build with KernelSU + SUSFS"
+        type: boolean
+        default: true
+
 env:
   MAN_DISABLE: true
   DEBIAN_FRONTEND: noninteractive
 
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          # Build JSON array manually
+          ENTRIES=""
+          
+          if [[ "${{ github.event.inputs.BUILD_VANILLA }}" == "true" ]]; then
+            ENTRIES="${ENTRIES}{\"name\":\"Vanilla\",\"KSU\":\"no\",\"KSU_SUSFS\":\"false\"},"
+          fi
+          
+          if [[ "${{ github.event.inputs.BUILD_KSU }}" == "true" ]]; then
+            ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"yes\",\"KSU_SUSFS\":\"false\"},"
+          fi
+          
+          if [[ "${{ github.event.inputs.BUILD_KSU_SUSFS }}" == "true" ]]; then
+            ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"yes\",\"KSU_SUSFS\":\"true\"},"
+          fi
+          
+          # Remove trailing comma and wrap in array
+          ENTRIES="[${ENTRIES%,}]"
+          
+          # Output matrix
+          echo "matrix={\"include\":${ENTRIES}}" >> $GITHUB_OUTPUT
 
+  build:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -74,10 +116,8 @@ jobs:
 
       - name: Validate Inputs and Secrets
         env:
-          #TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
-          #TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
-          KSU: ${{ inputs.KSU }}
-          KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
+          KSU: ${{ matrix.KSU }}
+          KSU_SUSFS: ${{ matrix.KSU_SUSFS }}
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
         run: |
           _error() {
@@ -87,7 +127,6 @@ jobs:
 
           ret=0
 
-          # KernelSU Validation (Supports yes, no, resukisu)
           if [[ $KSU == "no" && $KSU_SUSFS == "true" ]]; then
               _error "Cannot use SuSFS without KernelSU"
           fi
@@ -104,66 +143,151 @@ jobs:
 
       - name: Run Build Script
         env:
-          #TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }} # telegram chat id
-          #TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }} # telegram bot token
+          GH_TOKEN: ${{ github.token }}
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
-          KSU: ${{ inputs.KSU }}
-          KSU_SUSFS: ${{ inputs.KSU_SUSFS }}
+          KSU: ${{ matrix.KSU }}
+          KSU_SUSFS: ${{ matrix.KSU_SUSFS }}
           LAST_BUILD: ${{ inputs.LAST_BUILD }}
           TODO: ${{ inputs.TODO }}
           STATUS: ${{ inputs.STATUS }}
+          TEST: ${{ inputs.TEST }}
           KVER: ${{ inputs.KERNEL_VERSION }}
+          BUILD_NAME: ${{ matrix.name }}
         run: |
           export GIT_CLONE_PROTECTION_ACTIVE=false
           chmod +x *.sh py/*.py
           ./build.sh
 
-      - name: Upload Artifacts (ZIP & IMG)
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.BASE_NAME }}-${{ github.run_number }}
-          path: |
-            artifacts/*.zip
-            artifacts/*.img
+      - name: Save environment for release
+        run: |
+          cat > build-env-${{ matrix.name }}.txt << EOF
+          RELEASE_REPO=${{ env.RELEASE_REPO }}
+          KERNEL_NAME=${{ env.KERNEL_NAME }}
+          RELEASE_NAME=${{ env.RELEASE_NAME }}
+          RELEASE=${{ env.RELEASE }}
+          LINUX_VERSION=${{ env.LINUX_VERSION }}
+          COMPILER_STRING=${{ env.COMPILER_STRING }}
+          SUSFS_VERSION=${{ env.SUSFS_VERSION }}
+          BASE_NAME=${{ env.BASE_NAME }}
+          KSU=${{ matrix.KSU }}
+          KSU_SUSFS=${{ matrix.KSU_SUSFS }}
+          EOF
 
-      - name: Upload Artifacts (Info File)
+          echo "BUILD_VARIANT=${{ matrix.name }}" >> build-env-${{ matrix.name }}.txt
+          echo "Saved environment for ${{ matrix.name }}"
+
+      - name: Upload environment file
         uses: actions/upload-artifact@v4
         with:
-          name: info-${{ github.run_number }}
-          path: artifacts/*.txt
+          name: build-env-${{ matrix.name }}-${{ github.run_number }}
+          path: build-env-${{ matrix.name }}.txt
+          retention-days: 1
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.name }}-${{ github.run_number }}
+          path: artifacts/
+          retention-days: 1
+
+  upload-all:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-artifacts
+          merge-multiple: true
+
+      - name: Upload combined artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-builds-${{ github.run_number }}
+          path: |
+            downloaded-artifacts/artifacts/*.txt
+            downloaded-artifacts/artifacts/*.zip
+
+  release:
+    needs: build
+    if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          merge-multiple: true
 
       - name: Generate Checksums
-        if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
         run: |
-          cd artifacts
+          cd release-artifacts
           sha256sum *.zip > checksums.txt
           md5sum *.zip > checksums-md5.txt
-          CHECKSUMS=$(cat checksums.txt)
-          CHECKSUMS="${CHECKSUMS//'%'/'%25'}"
-          CHECKSUMS="${CHECKSUMS//$'\n'/'%0A'}"
-          CHECKSUMS="${CHECKSUMS//$'\r'/'%0D'}"
-          echo "CHECKSUMS=$CHECKSUMS" >> $GITHUB_ENV
 
+      - name: Load environment from builds
+        run: |
+          # Find all environment files
+          ENV_FILES=$(find release-artifacts -name "build-env-*.txt")
+    
+          # Set defaults
+          echo "KSU=Not included" >> $GITHUB_ENV
+          echo "KSU_SUSFS=Not included" >> $GITHUB_ENV
+          echo "SUSFS_VERSION=Not included" >> $GITHUB_ENV
+    
+          # Load values from any file
+          SUSFS_FILE=""
+          for env_file in $ENV_FILES; do
+            echo "Checking $env_file..."
+      
+            # Check if this file has SUSFS
+            if grep -q "SUSFS_VERSION=" "$env_file" && grep -q "KSU_SUSFS=true" "$env_file"; then
+              SUSFS_FILE="$env_file"
+              echo "Found SUSFS build: $env_file"
+              break
+            fi
+          done
+    
+          # If no SUSFS file, take first file
+          if [ -z "$SUSFS_FILE" ]; then
+            SUSFS_FILE=$(echo "$ENV_FILES" | head -1)
+          fi
+    
+          # Load the chosen file
+          if [ -f "$SUSFS_FILE" ]; then
+            echo "Loading environment from: $SUSFS_FILE"
+            while IFS='=' read -r key value; do
+              if [ -n "$key" ] && [ -n "$value" ]; then
+                echo "$key=$value" >> $GITHUB_ENV
+              fi
+            done < "$SUSFS_FILE"
+          fi
 
-      - name: Upload All Builds to release repo
-        if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
-        uses: softprops/action-gh-release@v2
-        with:
-          repository: ${{ env.RELEASE_REPO }}
-          name: ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
-          tag_name: ${{ env.RELEASE }}-r${{ github.run_number }}
-          prerelease: true
-          files: |
-            artifacts/*.zip
-            artifacts/checksums.txt
-            artifacts/checksums-md5.txt
-          body: |
+      - name: Prepare release body
+        run: |
+            # Get list of built variants
+            VARIANTS=$(ls release-artifacts/*.zip 2>/dev/null | xargs -n1 basename | sed 's/.zip//')
+            
+            {
+            if [ "${{ inputs.TEST }}" = "yes"  ];then
+              echo ">[!warning]"
+              echo ">This is empty testing release don't download/install anything from here!"
+              echo ""
+            fi
+            cat << EOF
             ### 📢 ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
             
             **Build Information:**
             - 🐧 **Kernel:** ${{ env.KERNEL_NAME }}
             - 🔖 **Version:** ${{ env.LINUX_VERSION }} (android14-6.1-lts)
-            - 🔰 **Variant:** SukiSU Ultra
+            - 📦 **Variants:**
+            $(echo "$VARIANTS" | sed 's/^/  - /')
             - 🛡️ **SuSFS:** ඞ ${{ env.SUSFS_VERSION }}
             - ⚙️ **Compiler:** ${{ env.COMPILER_STRING }}
             
@@ -179,9 +303,44 @@ jobs:
             - Filesystem extras: F2FS support
 
             ---
-            **Checksums:**
-            ```
-            ${{ env.CHECKSUMS }}
-            ```
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Built-in token, no need to set manually
+            **Android14-6.1-LTS Kernel Changelog (last 10 commits):**
+            EOF
+            echo ""
+            if [ -f release-artifacts/android_kernel-6.1_changelog.txt ]; then
+              cat release-artifacts/android_kernel-6.1_changelog.txt
+            else
+              echo "*No changelog available*"
+            fi
+            echo ""
+            echo "**Full Commit History:** [Browse all commits](https://github.com/ramabondanp/android_kernel_common-6.1/commits/android14-6.1-staging)"
+            echo ""
+            echo "---"
+            echo "**SukiSU Ultra Changelog (last 10 commits):**"
+            echo ""
+            if [ -f release-artifacts/sukisu_changelog.txt ]; then
+              cat release-artifacts/sukisu_changelog.txt
+            else
+              echo "*No changelog available*"
+            fi
+            echo ""
+            echo "**Full Commit History:** [Browse all commits](https://github.com/SukiSU-Ultra/SukiSU-Ultra/commits/builtin)"
+            echo ""
+            echo "---"
+            echo "**Checksums:**"
+            echo '```'
+            cat release-artifacts/checksums.txt
+            echo '```'
+            } > release_body.md
+
+      - name: Upload All Builds to release repo
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: ${{ env.RELEASE_REPO }}
+          name: ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
+          tag_name: ${{ env.RELEASE }}-r${{ github.run_number }}
+          prerelease: true
+          files: |
+            release-artifacts/*.zip
+            release-artifacts/checksums.txt
+            release-artifacts/checksums-md5.txt
+          body_path: release_body.md
