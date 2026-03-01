@@ -110,18 +110,6 @@ if [ "$KSU" = "yes" ]; then
 
     patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
 
-    # Add the stub at the end of susfs.c
-    cat >> fs/susfs.c << 'EOF'
-
-/* Added for SukiSU compatibility */
-void susfs_reorder_mnt_id(void)
-{
-    /* stub - required by SukiSU's kernel_umount when SUSFS is enabled */
-    return;
-}
-EXPORT_SYMBOL(susfs_reorder_mnt_id);
-EOF
-
    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
    echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
