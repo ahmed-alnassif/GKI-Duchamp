@@ -3,13 +3,16 @@
 # Define target defconfig location
 DEFCONFIG="arch/arm64/configs/gki_defconfig"
 
-if [ "$KSU" = "yes" ]; then
+if [ "$KSU" != "no" ]; then
   # Base KSU Config & Dependencies
   echo "⚙️ Added KSU configuration"
   cat >> $DEFCONFIG <<EOF
 CONFIG_KSU=y
 CONFIG_KPM=y
 EOF
+  if [ "$KSU" = "KSU" ]; then
+    echo "CONFIG_KPROBES=y" >> $DEFCONFIG
+  fi
 fi
 
 if [ "$KSU_SUSFS" = "true" ]; then
