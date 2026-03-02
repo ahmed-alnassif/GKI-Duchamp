@@ -120,6 +120,9 @@ if [ "$KSU" = "KSU" ]; then
   if susfs_included; then
     log "Wild-KSU+Multiple Managers included"
     install_ksu "WildKernels/Wild_KSU" "canary"
+    cd Wild_KSU
+    patch -p1 --fuzz=3 < $WORKDIR/patches/manager_hash.patch
+    cd ..
   else
     log "KernelSU-Next included"
     VARIANT="KernelSU-Next"
