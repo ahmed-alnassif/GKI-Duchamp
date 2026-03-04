@@ -92,6 +92,9 @@ echo "COMPILER_STRING=$COMPILER_STRING" >> $GITHUB_ENV
 
 cd $KSRC
 
+log "Applying BBRv3 patches"
+patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
+
 if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
   install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
