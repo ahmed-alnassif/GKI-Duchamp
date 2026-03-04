@@ -309,7 +309,7 @@ jobs:
             - Modern memory: **Multi-Gen LRU (MGLRU)** enabled → huge multitasking & battery win
             - zRAM: compressed swap with **LZ4** + **writeback** + tracking → more usable RAM in heavy use
             - I/O scheduler: **mq-deadline** as default → low-latency on fast UFS 4.0 storage
-            - Networking: **TCP BBR** + **FQ** + **ECN** → better speed on WiFi/mobile data
+            - Networking: **TCP BBRv3** + **FQ** + **ECN** → better speed on WiFi/mobile data
             - Filesystem extras: F2FS support
 
             ---
