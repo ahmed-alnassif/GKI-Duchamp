@@ -54,8 +54,10 @@ cd $WORKDIR
 # Set Kernel variant
 log "Setting Kernel variant..."
 case "$KSU" in
-  "yes") VARIANT="SukiSU-Ultra" ;;
+  "SKSU") VARIANT="SukiSU-Ultra" ;;
+  "KSU") VARIANT="Wild-KSU+Multiple-Managers" ;;
   "no") VARIANT="Vanilla" ;;
+  *) VARIANT="Vanilla" ;;
 esac
 susfs_included && VARIANT+="+SuSFS"
 
@@ -64,10 +66,6 @@ gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}
 > "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
 gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/sukisu_changelog.txt"
-
-# Replace Placeholder in zip name
-AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
-AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
 
 # Download Clang
 log "Downloading Clang..."
@@ -94,9 +92,9 @@ echo "COMPILER_STRING=$COMPILER_STRING" >> $GITHUB_ENV
 
 cd $KSRC
 
-if [ "$KSU" = "yes" ]; then
+if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
-  curl -LSs "https://raw.githubusercontent.com/ahmed-alnassif/SukiSU-Ultra/builtin/kernel/setup.sh" | bash -s builtin
+  install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
 
   if susfs_included; then
     log "SUSFS included"
@@ -118,6 +116,43 @@ if [ "$KSU" = "yes" ]; then
 
 fi
 
+if [ "$KSU" = "KSU" ]; then
+  if susfs_included; then
+    log "Wild-KSU+Multiple Managers included"
+    install_ksu "WildKernels/Wild_KSU" "canary"
+    cd Wild_KSU
+    patch -p1 --fuzz=3 < $WORKDIR/patches/manager_hash.patch
+    cd ..
+  else
+    log "KernelSU-Next included"
+    VARIANT="KernelSU-Next"
+    install_ksu "KernelSU-Next/KernelSU-Next" "dev"
+  fi
+
+  if susfs_included; then
+    log "SUSFS included"
+    SUSFS_DIR="$WORKDIR/susfs"
+    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
+    SUSFS_BRANCH="gki-android14-6.1"
+    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+
+    cp -R $SUSFS_PATCHES/fs/* ./fs
+    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
+
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+
+   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
+
+   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+
+  fi
+
+fi
+
+# Replace Placeholder in zip name
+AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
+AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
+
 # Test
 if [ "$TEST" = "yes" ]; then
   log pipeline test done
@@ -127,8 +162,6 @@ if [ "$TEST" = "yes" ]; then
 fi
 
 log "Patching custom configs..."
-export KSU
-export KSU_SUSFS
 source $WORKDIR/patches/gki_defconfig.sh
 
 # set localversion

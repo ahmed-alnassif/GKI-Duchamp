@@ -1,0 +1,16 @@
+From: ahmed-alnassif
+---
+--- a/kernel/manager_hash.h	2026-03-03 01:48:56.330502690 +0300
++++ b/kernel/manager_hash.h	2026-03-03 01:50:51.349629429 +0300
+@@ -34,11 +34,6 @@
+ 		.size = 0x396,
+ 		.hash = "f415f4ed9435427e1fdf7f1fccd4dbc07b3d6b8751e4dbcec6f19671f427870b",
+ 	},
+-	// ShirkNeko
+-	{
+-		.size = 0x35c,
+-		.hash = "947ae944f3de4ed4c21a7e4f7953ecf351bfa2b36239da37a34111ad29993eef",
+-	},
+ 	// Neko
+ 	{
+ 		.size = 0x29c,

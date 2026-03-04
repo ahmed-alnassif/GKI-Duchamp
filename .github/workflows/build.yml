@@ -59,7 +59,12 @@ on:
         default: true
 
       BUILD_KSU:
-        description: "Build with KernelSU"
+        description: "Build with KernelSU-Next and Wild-KSU"
+        type: boolean
+        default: true
+
+      BUILD_SKSU:
+        description: "Build with SukiSU-Ultra"
         type: boolean
         default: true
 
@@ -82,22 +87,27 @@ jobs:
         run: |
           # Build JSON array manually
           ENTRIES=""
-          
+
           if [[ "${{ github.event.inputs.BUILD_VANILLA }}" == "true" ]]; then
             ENTRIES="${ENTRIES}{\"name\":\"Vanilla\",\"KSU\":\"no\",\"KSU_SUSFS\":\"false\"},"
           fi
-          
+
           if [[ "${{ github.event.inputs.BUILD_KSU }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"yes\",\"KSU_SUSFS\":\"false\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"false\"},"
           fi
-          
+
+          if [[ "${{ github.event.inputs.BUILD_SKSU }}" == "true" ]]; then
+            ENTRIES="${ENTRIES}{\"name\":\"SKSU\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"false\"},"
+          fi
+
           if [[ "${{ github.event.inputs.BUILD_KSU_SUSFS }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"yes\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"SKSU+SUSFS\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"true\"},"
           fi
-          
+
           # Remove trailing comma and wrap in array
           ENTRIES="[${ENTRIES%,}]"
-          
+
           # Output matrix
           echo "matrix={\"include\":${ENTRIES}}" >> $GITHUB_OUTPUT
 
