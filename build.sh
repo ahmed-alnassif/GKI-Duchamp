@@ -66,6 +66,8 @@ gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}
 > "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
 gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/sukisu_changelog.txt"
+gh api 'repos/WildKernels/Wild_KSU/commits?sha=canary&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+> "$RELEASE_DIR/wild_ksu_changelog.txt"
 
 # Download Clang
 log "Downloading Clang..."
