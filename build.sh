@@ -22,7 +22,7 @@ fi
 # Set timezone
 sudo timedatectl set-timezone "$TIMEZONE" || export TZ="$TIMEZONE"
 
-RELEASE="$(date +v%y.%m.%d)"
+RELEASE="$(date +v%y.%m.%d)${RUN_NUM}"
 
 mkdir -p $RELEASE_DIR
 
@@ -36,7 +36,7 @@ KERNEL_PATCHES="$WORKDIR/kernel-patches"
 source $WORKDIR/functions.sh
 
 echo "RELEASE_REPO=$(simplify_gh_url "$GKI_RELEASES_REPO")" >> $GITHUB_ENV
-echo "KERNEL_NAME=$KERNEL_NAME" >> $GITHUB_ENV
+echo "KERNEL_NAME=${KERNEL_NAME}${RUN_NUM}" >> $GITHUB_ENV
 echo "RELEASE_NAME=$KERNEL_NAME $RELEASE" >> $GITHUB_ENV
 echo "RELEASE=$RELEASE" >> $GITHUB_ENV
 
