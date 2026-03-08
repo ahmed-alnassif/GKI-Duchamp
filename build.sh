@@ -13,7 +13,7 @@ ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AK3-GKID"
 KERNEL_DEFCONFIG="gki_defconfig"
 
 if [ "$KVER" == "6.1" ]; then
-  KERNEL_BRANCH="android14-6.1-staging"
+  KERNEL_BRANCH="android14-6.1"
 else
   echo "Unsupported kernel existing..."
   exit 1
