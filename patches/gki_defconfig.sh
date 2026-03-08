@@ -3,13 +3,16 @@
 # Define target defconfig location
 DEFCONFIG="arch/arm64/configs/gki_defconfig"
 
-if [ "$KSU" = "yes" ]; then
+if [ "$KSU" != "no" ]; then
   # Base KSU Config & Dependencies
   echo "⚙️ Added KSU configuration"
   cat >> $DEFCONFIG <<EOF
 CONFIG_KSU=y
 CONFIG_KPM=y
 EOF
+  if [ "$KSU" = "KSU" ]; then
+    echo "CONFIG_KPROBES=y" >> $DEFCONFIG
+  fi
 fi
 
 if [ "$KSU_SUSFS" = "true" ]; then
@@ -35,24 +38,18 @@ EOF
 
 fi
 
-# --- Universal Performance Tuning Addition ---
 echo "⚙️ Adding Universal Performance Tuning"
 cat >> $DEFCONFIG <<EOF
-# --- Universal Performance Tuning ---
+# Universal Performance Tuning
 CONFIG_TMPFS_XATTR=y
 CONFIG_TMPFS_POSIX_ACL=y
-CONFIG_IP_NF_TARGET_TTL=y
-CONFIG_TCP_CONG_ADVANCED=y
-CONFIG_TCP_CONG_BBR=y
-CONFIG_NET_SCH_FQ=y
-CONFIG_DEFAULT_BBR=y
 CONFIG_HZ_300=y
 CONFIG_HZ=300
 CONFIG_CPU_FREQ=y
-CONFIG_SWAP=y
 CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
 CONFIG_CPU_FREQ_GOV_ONDEMAND=y
 # Better I/O & filesystem performance
+CONFIG_SWAP=y
 CONFIG_BLK_DEV_ZRAM=y
 CONFIG_ZRAM_DEF_COMP_LZ4=y
 CONFIG_ZRAM_WRITEBACK=y
@@ -69,5 +66,12 @@ CONFIG_F2FS_FS_COMPRESSION=y
 CONFIG_LRU_GEN=y
 CONFIG_LRU_GEN_ENABLED=y
 # Networking extras
-CONFIG_TCP_ECN=y
+CONFIG_IP_NF_TARGET_TTL=y
+CONFIG_NET_SCH_FQ=y
+CONFIG_TCP_CONG_ADVANCED=y
+CONFIG_DEFAULT_BBR=y
+CONFIG_TCP_CONG_BBR=y
+CONFIG_TCP_CONG_WESTWOOD=y
+CONFIG_IP6_NF_TARGET_HL=y
+CONFIG_IP6_NF_MATCH_HL=y
 EOF

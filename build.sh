@@ -13,7 +13,7 @@ ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AK3-GKID"
 KERNEL_DEFCONFIG="gki_defconfig"
 
 if [ "$KVER" == "6.1" ]; then
-  KERNEL_BRANCH="android14-6.1-staging"
+  KERNEL_BRANCH="android14-6.1"
 else
   echo "Unsupported kernel existing..."
   exit 1
@@ -22,7 +22,7 @@ fi
 # Set timezone
 sudo timedatectl set-timezone "$TIMEZONE" || export TZ="$TIMEZONE"
 
-RELEASE="$(date +v%y.%m.%d)"
+RELEASE="$(date +v%y.%m.%d)${RUN_NUM}"
 
 mkdir -p $RELEASE_DIR
 
@@ -36,7 +36,7 @@ KERNEL_PATCHES="$WORKDIR/kernel-patches"
 source $WORKDIR/functions.sh
 
 echo "RELEASE_REPO=$(simplify_gh_url "$GKI_RELEASES_REPO")" >> $GITHUB_ENV
-echo "KERNEL_NAME=$KERNEL_NAME" >> $GITHUB_ENV
+echo "KERNEL_NAME=${KERNEL_NAME}${RUN_NUM}" >> $GITHUB_ENV
 echo "RELEASE_NAME=$KERNEL_NAME $RELEASE" >> $GITHUB_ENV
 echo "RELEASE=$RELEASE" >> $GITHUB_ENV
 
@@ -54,8 +54,10 @@ cd $WORKDIR
 # Set Kernel variant
 log "Setting Kernel variant..."
 case "$KSU" in
-  "yes") VARIANT="SukiSU-Ultra" ;;
+  "SKSU") VARIANT="SukiSU-Ultra" ;;
+  "KSU") VARIANT="Wild-KSU+Multiple-Managers" ;;
   "no") VARIANT="Vanilla" ;;
+  *) VARIANT="Vanilla" ;;
 esac
 susfs_included && VARIANT+="+SuSFS"
 
@@ -64,10 +66,8 @@ gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}
 > "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
 gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/sukisu_changelog.txt"
-
-# Replace Placeholder in zip name
-AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
-AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
+gh api 'repos/WildKernels/Wild_KSU/commits?sha=canary&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+> "$RELEASE_DIR/wild_ksu_changelog.txt"
 
 # Download Clang
 log "Downloading Clang..."
@@ -94,9 +94,12 @@ echo "COMPILER_STRING=$COMPILER_STRING" >> $GITHUB_ENV
 
 cd $KSRC
 
-if [ "$KSU" = "yes" ]; then
+log "Applying BBRv3 patches"
+patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
+
+if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
-  curl -LSs "https://raw.githubusercontent.com/ahmed-alnassif/SukiSU-Ultra/builtin/kernel/setup.sh" | bash -s builtin
+  install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
 
   if susfs_included; then
     log "SUSFS included"
@@ -110,17 +113,38 @@ if [ "$KSU" = "yes" ]; then
 
     patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
 
-    # Add the stub at the end of susfs.c
-    cat >> fs/susfs.c << 'EOF'
+   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
-/* Added for SukiSU compatibility */
-void susfs_reorder_mnt_id(void)
-{
-    /* stub - required by SukiSU's kernel_umount when SUSFS is enabled */
-    return;
-}
-EXPORT_SYMBOL(susfs_reorder_mnt_id);
-EOF
+   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+
+  fi
+
+fi
+
+if [ "$KSU" = "KSU" ]; then
+  if susfs_included; then
+    log "Wild-KSU+Multiple Managers included"
+    install_ksu "WildKernels/Wild_KSU" "canary"
+    cd Wild_KSU
+    patch -p1 --fuzz=3 < $WORKDIR/patches/manager_hash.patch
+    cd ..
+  else
+    log "KernelSU-Next included"
+    VARIANT="KernelSU-Next"
+    install_ksu "KernelSU-Next/KernelSU-Next" "dev"
+  fi
+
+  if susfs_included; then
+    log "SUSFS included"
+    SUSFS_DIR="$WORKDIR/susfs"
+    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
+    SUSFS_BRANCH="gki-android14-6.1"
+    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+
+    cp -R $SUSFS_PATCHES/fs/* ./fs
+    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
+
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
 
    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
@@ -129,6 +153,10 @@ EOF
   fi
 
 fi
+
+# Replace Placeholder in zip name
+AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
+AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
 
 # Test
 if [ "$TEST" = "yes" ]; then
@@ -139,8 +167,6 @@ if [ "$TEST" = "yes" ]; then
 fi
 
 log "Patching custom configs..."
-export KSU
-export KSU_SUSFS
 source $WORKDIR/patches/gki_defconfig.sh
 
 # set localversion

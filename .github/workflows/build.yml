@@ -59,7 +59,12 @@ on:
         default: true
 
       BUILD_KSU:
-        description: "Build with KernelSU"
+        description: "Build with KernelSU-Next and Wild-KSU"
+        type: boolean
+        default: true
+
+      BUILD_SKSU:
+        description: "Build with SukiSU-Ultra"
         type: boolean
         default: true
 
@@ -82,22 +87,27 @@ jobs:
         run: |
           # Build JSON array manually
           ENTRIES=""
-          
+
           if [[ "${{ github.event.inputs.BUILD_VANILLA }}" == "true" ]]; then
             ENTRIES="${ENTRIES}{\"name\":\"Vanilla\",\"KSU\":\"no\",\"KSU_SUSFS\":\"false\"},"
           fi
-          
+
           if [[ "${{ github.event.inputs.BUILD_KSU }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"yes\",\"KSU_SUSFS\":\"false\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"false\"},"
           fi
-          
+
+          if [[ "${{ github.event.inputs.BUILD_SKSU }}" == "true" ]]; then
+            ENTRIES="${ENTRIES}{\"name\":\"SKSU\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"false\"},"
+          fi
+
           if [[ "${{ github.event.inputs.BUILD_KSU_SUSFS }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"yes\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"SKSU+SUSFS\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"true\"},"
           fi
-          
+
           # Remove trailing comma and wrap in array
           ENTRIES="[${ENTRIES%,}]"
-          
+
           # Output matrix
           echo "matrix={\"include\":${ENTRIES}}" >> $GITHUB_OUTPUT
 
@@ -153,6 +163,7 @@ jobs:
           TEST: ${{ inputs.TEST }}
           KVER: ${{ inputs.KERNEL_VERSION }}
           BUILD_NAME: ${{ matrix.name }}
+          RUN_NUM: -r${{ github.run_number }}
         run: |
           export GIT_CLONE_PROTECTION_ACTIVE=false
           chmod +x *.sh py/*.py
@@ -281,10 +292,10 @@ jobs:
               echo ""
             fi
             cat << EOF
-            ### 📢 ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
+            ### 📢 ${{ env.RELEASE_NAME }}
             
             **Build Information:**
-            - 🐧 **Kernel:** ${{ env.KERNEL_NAME }}
+            - 🐧 **Kernel:** ${{ env.RELEASE_NAME }}
             - 🔖 **Version:** ${{ env.LINUX_VERSION }} (android14-6.1-lts)
             - 📦 **Variants:**
             $(echo "$VARIANTS" | sed 's/^/  - /')
@@ -299,8 +310,21 @@ jobs:
             - Modern memory: **Multi-Gen LRU (MGLRU)** enabled → huge multitasking & battery win
             - zRAM: compressed swap with **LZ4** + **writeback** + tracking → more usable RAM in heavy use
             - I/O scheduler: **mq-deadline** as default → low-latency on fast UFS 4.0 storage
-            - Networking: **TCP BBR** + **FQ** + **ECN** → better speed on WiFi/mobile data
+            - Networking: **TCP BBRv3** + **TCP Westwood+** + **FQ** + **ECN** + **IPv6 HL support** → better speed on WiFi/mobile data
             - Filesystem extras: F2FS support
+            
+            >[!Tip]
+            >Follow the next instructions to switch between Westwood+ and BBRv3
+            
+            To switch to westwood
+            \`\`\`bash
+            su -c "sysctl -w net.ipv4.tcp_congestion_control=westwood"
+            \`\`\`
+            To restore BBRv3
+            \`\`\`bash
+            su -c "sysctl -w net.ipv4.tcp_congestion_control=bbr"
+            \`\`\`
+            Test both and choose the suitable one for your network.
 
             ---
             **Android14-6.1-LTS Kernel Changelog (last 10 commits):**
@@ -313,6 +337,17 @@ jobs:
             fi
             echo ""
             echo "**Full Commit History:** [Browse all commits](https://github.com/ramabondanp/android_kernel_common-6.1/commits/android14-6.1-staging)"
+            echo ""
+            echo "---"
+            echo "**Wild KSU Changelog (last 10 commits):**"
+            echo ""
+            if [ -f release-artifacts/wild_ksu_changelog.txt ]; then
+              cat release-artifacts/wild_ksu_changelog.txt
+            else
+              echo "*No changelog available*"
+            fi
+            echo ""
+            echo "**Full Commit History:** [Browse all commits](https://github.com/WildKernels/Wild_KSU/commits/canary)"
             echo ""
             echo "---"
             echo "**SukiSU Ultra Changelog (last 10 commits):**"
@@ -336,8 +371,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           repository: ${{ env.RELEASE_REPO }}
-          name: ${{ env.RELEASE_NAME }}-r${{ github.run_number }}
-          tag_name: ${{ env.RELEASE }}-r${{ github.run_number }}
+          name: ${{ env.RELEASE_NAME }}
+          tag_name: ${{ env.RELEASE }}
           prerelease: true
           files: |
             release-artifacts/*.zip
