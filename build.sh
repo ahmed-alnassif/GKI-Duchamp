@@ -40,6 +40,15 @@ echo "KERNEL_NAME=${KERNEL_NAME}${RUN_NUM}" >> $GITHUB_ENV
 echo "RELEASE_NAME=$KERNEL_NAME $RELEASE" >> $GITHUB_ENV
 echo "RELEASE=$RELEASE" >> $GITHUB_ENV
 
+# Logging
+BUILD_LOGS="$RELEASE_DIR/build.log"
+exec > >(tee -a "$BUILD_LOGS") 2>&1
+
+trap 'echo "=== SCRIPT EXIT at $(date) ===" >> "$BUILD_LOGS"' EXIT
+trap 'echo "!!! ERROR at line $LINENO: [[$BASH_COMMAND]]" >> "$BUILD_LOGS"' ERR
+trap 'echo "!!! Received SIGTERM at $(date) - possible GitHub kill" >> "$BUILD_LOGS"' TERM
+trap 'echo "!!! Received SIGINT at $(date)" >> "$BUILD_LOGS"' INT
+
 # Clone kernel source
 log "Cloning kernel source from $(simplify_gh_url "$KERNEL_REPO")"
 git clone -q --depth=1 $KERNEL_REPO -b $KERNEL_BRANCH $KSRC
@@ -99,7 +108,12 @@ patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
 
 if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
-  install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
+  if susfs_included; then
+    #install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
+    install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
+  else
+    install_ksu "SukiSU-Ultra/SukiSU-Ultra" "main"
+  fi
 
   if susfs_included; then
     log "SUSFS included"
