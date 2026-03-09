@@ -99,7 +99,8 @@ patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
 
 if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
-  install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
+  #install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
+  install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
 
   if susfs_included; then
     log "SUSFS included"
