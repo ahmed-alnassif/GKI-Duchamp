@@ -170,6 +170,7 @@ jobs:
           ./build.sh
 
       - name: Save environment for release
+        if: always()
         run: |
           cat > build-env-${{ matrix.name }}.txt << EOF
           RELEASE_REPO=${{ env.RELEASE_REPO }}
@@ -188,6 +189,7 @@ jobs:
           echo "Saved environment for ${{ matrix.name }}"
 
       - name: Upload environment file
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: build-env-${{ matrix.name }}-${{ github.run_number }}
@@ -195,6 +197,7 @@ jobs:
           retention-days: 1
 
       - name: Upload build artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.name }}-${{ github.run_number }}
