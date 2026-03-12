@@ -74,4 +74,7 @@ CONFIG_TCP_CONG_BBR=y
 CONFIG_TCP_CONG_WESTWOOD=y
 CONFIG_IP6_NF_TARGET_HL=y
 CONFIG_IP6_NF_MATCH_HL=y
+# Disable useless debugging configs for performance and resources
+CONFIG_UBSAN=n
+CONFIG_PAGE_OWNER=n
 EOF
