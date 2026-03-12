@@ -77,4 +77,5 @@ CONFIG_IP6_NF_MATCH_HL=y
 # Disable useless debugging configs for performance and resources
 CONFIG_UBSAN=n
 CONFIG_PAGE_OWNER=n
+CONFIG_RCU_TRACE=n
 EOF
