@@ -219,6 +219,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: all-builds-${{ github.run_number }}
+          retention-days: 7
           path: |
             downloaded-artifacts/artifacts/*.txt
             downloaded-artifacts/artifacts/*.zip
