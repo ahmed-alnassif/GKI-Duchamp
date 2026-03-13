@@ -76,6 +76,7 @@ CONFIG_IP6_NF_TARGET_HL=y
 CONFIG_IP6_NF_MATCH_HL=y
 EOF
 if [ "$KSU" != "CKSU" ]; then
+  echo "Disable useless debugging configs for performance and resources"
   cat >> $DEFCONFIG <<EOF
 # Disable useless debugging configs for performance and resources
 CONFIG_UBSAN=n
