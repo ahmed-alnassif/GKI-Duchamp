@@ -65,6 +65,7 @@ log "Setting Kernel variant..."
 case "$KSU" in
   "SKSU") VARIANT="SukiSU-Ultra" ;;
   "KSU") VARIANT="Wild-KSU+Multiple-Managers" ;;
+  "CKSU") VARIANT="Compat+Wild-KSU+Multiple-Managers" ;;
   "no") VARIANT="Vanilla" ;;
   *) VARIANT="Vanilla" ;;
 esac
@@ -109,8 +110,8 @@ patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
 if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
   if susfs_included; then
-    #install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
-    install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
+    install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
+    #install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
   else
     install_ksu "SukiSU-Ultra/SukiSU-Ultra" "main"
   fi
@@ -136,10 +137,11 @@ if [ "$KSU" = "SKSU" ]; then
 
 fi
 
-if [ "$KSU" = "KSU" ]; then
+if [ "$KSU" = "KSU" ] || [ "$KSU" = "CKSU" ]; then
   if susfs_included; then
     log "Wild-KSU+Multiple Managers included"
-    install_ksu "WildKernels/Wild_KSU" "canary"
+    install_ksu "ahmed-alnassif/Wild_KSU" "canary"
+    #install_ksu "WildKernels/Wild_KSU" "canary"
     cd Wild_KSU
     patch -p1 --fuzz=3 < $WORKDIR/patches/manager_hash.patch
     cd ..
