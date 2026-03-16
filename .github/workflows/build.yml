@@ -58,6 +58,11 @@ on:
         type: boolean
         default: true
 
+      BUILD_KSU:
+        description: "Build with KernelSU"
+        type: boolean
+        default: true
+
       BUILD_KSUN:
         description: "Build with KernelSU-Next"
         type: boolean
@@ -92,6 +97,10 @@ jobs:
             ENTRIES="${ENTRIES}{\"name\":\"Vanilla\",\"KSU\":\"no\",\"KSU_SUSFS\":\"false\"},"
           fi
 
+          if [[ "${{ github.event.inputs.BUILD_KSU }}" == "true" ]]; then
+            ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"false\"},"
+          fi
+
           if [[ "${{ github.event.inputs.BUILD_KSUN }}" == "true" ]]; then
             ENTRIES="${ENTRIES}{\"name\":\"KSUN\",\"KSU\":\"WKSU\",\"KSU_SUSFS\":\"false\"},"
           fi
@@ -101,6 +110,7 @@ jobs:
           fi
 
           if [[ "${{ github.event.inputs.BUILD_KSU_SUSFS }}" == "true" ]]; then
+            ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"WKSU+SUSFS\",\"KSU\":\"WKSU\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"Compat+KSU+SUSFS\",\"KSU\":\"CWKSU\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"SKSU+SUSFS\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"true\"},"
