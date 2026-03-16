@@ -176,14 +176,6 @@ fi
 AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
 AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
 
-# Test
-if [ "$TEST" = "yes" ]; then
-  log pipeline test done
-  mkdir -p "$RELEASE_DIR"
-  echo "test-${VARIANT}" > "$RELEASE_DIR/test-${VARIANT}.zip"
-  exit 0
-fi
-
 log "Patching custom configs..."
 source $WORKDIR/patches/gki_defconfig.sh
 
@@ -242,6 +234,14 @@ if susfs_included; then
     grep "depends on" $(find . -name "Kconfig" -exec grep -l "KSU_SUSFS" {} \;) 2>/dev/null || echo "No dependency info found"
   fi
 
+fi
+
+# Test
+if [ "$TEST" = "yes" ]; then
+  log pipeline test done
+  mkdir -p "$RELEASE_DIR"
+  echo "test-${VARIANT}" > "$RELEASE_DIR/test-${VARIANT}.zip"
+  exit 0
 fi
 
 if [[ $TODO == "defconfig" ]]; then
