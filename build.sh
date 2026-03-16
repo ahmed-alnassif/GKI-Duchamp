@@ -175,19 +175,32 @@ fi
 
 if [ "$KSU" = "KSU" ]; then
   log "KernelSU included"
-  install_ksu "tiann/KernelSU" "main"
+  if ! susfs_included; then
+    install_ksu "tiann/KernelSU" "main"
+  fi
 
   if susfs_included; then
+    git clone https://github.com/tiann/KernelSU && echo "[+] Repository cloned."
     log "SUSFS included"
     SUSFS_DIR="$WORKDIR/susfs"
     SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
     SUSFS_BRANCH="gki-android14-6.1"
     git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
+    cd KernelSU
+    patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
+    rm -f kernel/ksu.c.orig
+    sed -i "/    git pull && echo \"\[+\] Repository updated.\"/d" "kernel/setup.sh"
+    git config --global user.email "mr.ahmed.nassif@gmail.com"
+    git config --global user.name "Ahmed Al-Nassif"
+    git add .
+    git commit -m "susfs patch"
+    cd ..
+    bash "KernelSU/kernel/setup.sh" "main"
+
     cp -R $SUSFS_PATCHES/fs/* ./fs
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
-    patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
     patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
 
