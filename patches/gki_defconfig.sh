@@ -10,7 +10,7 @@ if [ "$KSU" != "no" ]; then
 CONFIG_KSU=y
 CONFIG_KPM=y
 EOF
-  if [ "$KSU" = "KSU" ]; then
+  if [ "$KSU" = "WKSU" ]; then
     echo "CONFIG_KPROBES=y" >> $DEFCONFIG
   fi
 fi
@@ -75,7 +75,7 @@ CONFIG_TCP_CONG_WESTWOOD=y
 CONFIG_IP6_NF_TARGET_HL=y
 CONFIG_IP6_NF_MATCH_HL=y
 EOF
-if [ "$KSU" != "CKSU" ]; then
+if [ "$KSU" != "CWKSU" ]; then
   echo "Disable useless debugging configs for performance and resources"
   cat >> $DEFCONFIG <<EOF
 # Disable useless debugging configs for performance and resources

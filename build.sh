@@ -64,8 +64,8 @@ cd $WORKDIR
 log "Setting Kernel variant..."
 case "$KSU" in
   "SKSU") VARIANT="SukiSU-Ultra" ;;
-  "KSU") VARIANT="Wild-KSU+Multiple-Managers" ;;
-  "CKSU") VARIANT="Compat+Wild-KSU+Multiple-Managers" ;;
+  "WKSU") VARIANT="Wild-KSU+Multiple-Managers" ;;
+  "CWKSU") VARIANT="Compat+Wild-KSU+Multiple-Managers" ;;
   "no") VARIANT="Vanilla" ;;
   *) VARIANT="Vanilla" ;;
 esac
@@ -137,7 +137,7 @@ if [ "$KSU" = "SKSU" ]; then
 
 fi
 
-if [ "$KSU" = "KSU" ] || [ "$KSU" = "CKSU" ]; then
+if [ "$KSU" = "WKSU" ] || [ "$KSU" = "CWKSU" ]; then
   if susfs_included; then
     log "Wild-KSU+Multiple Managers included"
     install_ksu "ahmed-alnassif/Wild_KSU" "canary"
