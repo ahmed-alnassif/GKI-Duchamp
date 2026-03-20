@@ -112,7 +112,7 @@ jobs:
           if [[ "${{ github.event.inputs.BUILD_KSU_SUSFS }}" == "true" ]]; then
             ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"WKSU+SUSFS\",\"KSU\":\"WKSU\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"Compat+KSU+SUSFS\",\"KSU\":\"CWKSU\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"Compat+WKSU+SUSFS\",\"KSU\":\"CWKSU\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"SKSU+SUSFS\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"true\"},"
           fi
 
