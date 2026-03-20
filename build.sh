@@ -108,6 +108,10 @@ cd $KSRC
 log "Applying BBRv3 patches"
 patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
 
+log "BBG included"
+wget -O- "https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh" | bash
+sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' "security/Kconfig"
+
 if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
   if susfs_included; then
