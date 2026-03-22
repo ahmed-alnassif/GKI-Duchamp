@@ -64,8 +64,9 @@ cd $WORKDIR
 log "Setting Kernel variant..."
 case "$KSU" in
   "SKSU") VARIANT="SukiSU-Ultra" ;;
-  "KSU") VARIANT="Wild-KSU+Multiple-Managers" ;;
-  "CKSU") VARIANT="Compat+Wild-KSU+Multiple-Managers" ;;
+  "KSU") VARIANT="KernelSU" ;;
+  "WKSU") VARIANT="Wild-KSU+Multiple-Managers" ;;
+  "CWKSU") VARIANT="Compat+Wild-KSU+Multiple-Managers" ;;
   "no") VARIANT="Vanilla" ;;
   *) VARIANT="Vanilla" ;;
 esac
@@ -107,11 +108,15 @@ cd $KSRC
 log "Applying BBRv3 patches"
 patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
 
+log "BBG included"
+wget -O- "https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh" | bash
+sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' "security/Kconfig"
+
 if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
   if susfs_included; then
-    install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
-    #install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
+    #install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
+    install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
   else
     install_ksu "SukiSU-Ultra/SukiSU-Ultra" "main"
   fi
@@ -137,14 +142,11 @@ if [ "$KSU" = "SKSU" ]; then
 
 fi
 
-if [ "$KSU" = "KSU" ] || [ "$KSU" = "CKSU" ]; then
+if [ "$KSU" = "WKSU" ] || [ "$KSU" = "CWKSU" ]; then
   if susfs_included; then
     log "Wild-KSU+Multiple Managers included"
-    install_ksu "ahmed-alnassif/Wild_KSU" "canary"
-    #install_ksu "WildKernels/Wild_KSU" "canary"
-    cd Wild_KSU
-    patch -p1 --fuzz=3 < $WORKDIR/patches/manager_hash.patch
-    cd ..
+    #install_ksu "ahmed-alnassif/Wild_KSU" "canary"
+    install_ksu "WildKernels/Wild_KSU" "canary"
   else
     log "KernelSU-Next included"
     VARIANT="KernelSU-Next"
@@ -172,17 +174,48 @@ if [ "$KSU" = "KSU" ] || [ "$KSU" = "CKSU" ]; then
 
 fi
 
+if [ "$KSU" = "KSU" ]; then
+  log "KernelSU included"
+  if ! susfs_included; then
+    install_ksu "tiann/KernelSU" "main"
+  fi
+
+  if susfs_included; then
+    git clone https://github.com/tiann/KernelSU && echo "[+] Repository cloned."
+    log "SUSFS included"
+    SUSFS_DIR="$WORKDIR/susfs"
+    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
+    SUSFS_BRANCH="gki-android14-6.1"
+    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+
+    cd KernelSU
+    patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
+    rm -f kernel/ksu.c.orig
+    sed -i "/    git pull && echo \"\[+\] Repository updated.\"/d" "kernel/setup.sh"
+    git config --global user.email "mr.ahmed.nassif@gmail.com"
+    git config --global user.name "Ahmed Al-Nassif"
+    git add .
+    git commit -m "susfs patch"
+    cd ..
+    bash "KernelSU/kernel/setup.sh" "main"
+
+    cp -R $SUSFS_PATCHES/fs/* ./fs
+    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
+
+    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+
+   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
+
+   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+
+  fi
+
+fi
+
 # Replace Placeholder in zip name
 AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
 AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
-
-# Test
-if [ "$TEST" = "yes" ]; then
-  log pipeline test done
-  mkdir -p "$RELEASE_DIR"
-  echo "test-${VARIANT}" > "$RELEASE_DIR/test-${VARIANT}.zip"
-  exit 0
-fi
 
 log "Patching custom configs..."
 source $WORKDIR/patches/gki_defconfig.sh
@@ -242,6 +275,14 @@ if susfs_included; then
     grep "depends on" $(find . -name "Kconfig" -exec grep -l "KSU_SUSFS" {} \;) 2>/dev/null || echo "No dependency info found"
   fi
 
+fi
+
+# Test
+if [ "$TEST" = "yes" ]; then
+  log pipeline test done
+  mkdir -p "$RELEASE_DIR"
+  echo "test-${VARIANT}" > "$RELEASE_DIR/test-${VARIANT}.zip"
+  exit 0
 fi
 
 if [[ $TODO == "defconfig" ]]; then

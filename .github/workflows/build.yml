@@ -59,7 +59,12 @@ on:
         default: true
 
       BUILD_KSU:
-        description: "Build with KernelSU-Next and Wild-KSU"
+        description: "Build with KernelSU"
+        type: boolean
+        default: true
+
+      BUILD_KSUN:
+        description: "Build with KernelSU-Next"
         type: boolean
         default: true
 
@@ -69,7 +74,7 @@ on:
         default: true
 
       BUILD_KSU_SUSFS:
-        description: "Build with KernelSU + SUSFS"
+        description: "Build with KernelSU and its forks (SukiSU, Wild-KSU) + SUSFS"
         type: boolean
         default: true
 
@@ -96,13 +101,18 @@ jobs:
             ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"false\"},"
           fi
 
+          if [[ "${{ github.event.inputs.BUILD_KSUN }}" == "true" ]]; then
+            ENTRIES="${ENTRIES}{\"name\":\"KSUN\",\"KSU\":\"WKSU\",\"KSU_SUSFS\":\"false\"},"
+          fi
+
           if [[ "${{ github.event.inputs.BUILD_SKSU }}" == "true" ]]; then
             ENTRIES="${ENTRIES}{\"name\":\"SKSU\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"false\"},"
           fi
 
           if [[ "${{ github.event.inputs.BUILD_KSU_SUSFS }}" == "true" ]]; then
             ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"Compat+KSU+SUSFS\",\"KSU\":\"CKSU\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"WKSU+SUSFS\",\"KSU\":\"WKSU\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"Compat+WKSU+SUSFS\",\"KSU\":\"CWKSU\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"SKSU+SUSFS\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"true\"},"
           fi
 
@@ -306,7 +316,10 @@ jobs:
             $(echo "$VARIANTS" | sed 's/^/  - /')
             - 🛡️ **SuSFS:** ඞ ${{ env.SUSFS_VERSION }}
             - ⚙️ **Compiler:** ${{ env.COMPILER_STRING }}
-            
+
+            >[!Important]
+            >- Got a bootloop? Switch to Compat+Wild-KSU+Multiple-Managers+SuSFS variant.
+
             **Performance & Efficiency Tweaks**
             Balanced optimizations for smoother UI, better multitasking & gaming on Poco X6 Pro (and similar **6.1.xx-android14** GKI kernel devices):
 
@@ -317,10 +330,11 @@ jobs:
             - I/O scheduler: **mq-deadline** as default → low-latency on fast UFS 4.0 storage
             - Networking: **TCP BBRv3** + **TCP Westwood+** + **FQ** + **ECN** + **IPv6 HL support** → better speed on WiFi/mobile data
             - Filesystem extras: F2FS support
-            
+            - BBG (baseband-guard) a lightweight **LSM (Linux Security Module)** for the Android kernel, designed to block unauthorized writes to critical partitions/device nodes at the system level. This reduces the risk of malicious or accidental tampering with critical components such as the baseband and boot chain.
+
             >[!Tip]
             >Follow the next instructions to switch between Westwood+ and BBRv3
-            
+
             To switch to westwood
             \`\`\`bash
             su -c "sysctl -w net.ipv4.tcp_congestion_control=westwood"
