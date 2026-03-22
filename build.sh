@@ -75,6 +75,8 @@ susfs_included && VARIANT+="+SuSFS"
 log "Changelog of repos"
 gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
+gh api 'repos/tiann/KernelSU/commits?sha=main&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+> "$RELEASE_DIR/ksu_changelog.txt"
 gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/sukisu_changelog.txt"
 gh api 'repos/WildKernels/Wild_KSU/commits?sha=canary&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
@@ -181,7 +183,7 @@ if [ "$KSU" = "KSU" ]; then
   fi
 
   if susfs_included; then
-    git clone https://github.com/tiann/KernelSU && echo "[+] Repository cloned."
+    git clone "https://github.com/tiann/KernelSU" && echo "[+] Repository cloned."
     log "SUSFS included"
     SUSFS_DIR="$WORKDIR/susfs"
     SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
