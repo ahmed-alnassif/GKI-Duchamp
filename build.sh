@@ -147,8 +147,8 @@ fi
 if [ "$KSU" = "WKSU" ] || [ "$KSU" = "CWKSU" ]; then
   if susfs_included; then
     log "Wild-KSU+Multiple Managers included"
-    #install_ksu "ahmed-alnassif/Wild_KSU" "canary"
-    install_ksu "WildKernels/Wild_KSU" "canary"
+    install_ksu "ahmed-alnassif/Wild_KSU" "canary"
+    #install_ksu "WildKernels/Wild_KSU" "canary"
   else
     log "KernelSU-Next included"
     VARIANT="KernelSU-Next"
