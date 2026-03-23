@@ -183,6 +183,7 @@ if [ "$KSU" = "KSU" ]; then
   fi
 
   if susfs_included; then
+    VARIANT+="+Multiple-Managers"
     git clone "https://github.com/tiann/KernelSU" && echo "[+] Repository cloned."
     log "SUSFS included"
     SUSFS_DIR="$WORKDIR/susfs"
@@ -192,6 +193,7 @@ if [ "$KSU" = "KSU" ]; then
 
     cd KernelSU
     git reset --hard "61c6313"
+    patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-add-multiple-managers.patch"
     patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
     rm -f kernel/ksu.c.orig
     sed -i "/    git pull && echo \"\[+\] Repository updated.\"/d" "kernel/setup.sh"
