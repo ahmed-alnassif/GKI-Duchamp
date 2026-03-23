@@ -62,8 +62,8 @@ index 0000000..3e52607
 +static const struct manager_signature manager_signatures[] = {
 +	// Primary (from Kbuild)
 +	{
-+		.size = EXPECTED_MANAGER_SIZE,
-+		.hash = EXPECTED_MANAGER_HASH,
++		.size = EXPECTED_SIZE,
++		.hash = EXPECTED_HASH,
 +	},
 +	// wksu
 +	{
