@@ -191,6 +191,7 @@ if [ "$KSU" = "KSU" ]; then
     git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
     cd KernelSU
+    git reset --hard "61c6313"
     patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
     rm -f kernel/ksu.c.orig
     sed -i "/    git pull && echo \"\[+\] Repository updated.\"/d" "kernel/setup.sh"
