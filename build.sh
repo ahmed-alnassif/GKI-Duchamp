@@ -231,7 +231,7 @@ if [ "${TODO:-kernel}" = "kernel" ]; then
   if [ "$STATUS" = "BETA" ]; then
     SUFFIX="$LATEST_COMMIT_HASH"
   else
-    SUFFIX="${RELEASE}@${LATEST_COMMIT_HASH}"
+    SUFFIX="${RELEASE}/${LATEST_COMMIT_HASH}"
   fi
   config --set-str CONFIG_LOCALVERSION "-$KERNEL_NAME/$SUFFIX"
   config --disable CONFIG_LOCALVERSION_AUTO
