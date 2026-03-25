@@ -1,8 +1,9 @@
 # GKID Kernel
 
 [![Build Status](https://github.com/ahmed-alnassif/GKI-Duchamp/actions/workflows/build.yml/badge.svg)](https://github.com/ahmed-alnassif/GKI-Duchamp/actions/workflows/build.yml)
-[![Latest Release](https://img.shields.io/github/v/release/ahmed-alnassif/GKI-Duchamp?label=Latest%20Release&color=#00aa00)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
-[![Downloads](https://img.shields.io/github/downloads/ahmed-alnassif/GKI-Duchamp/total?label=Downloads&color=#00aa00)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
+[![Latest Release](https://img.shields.io/github/v/release/ahmed-alnassif/GKI-Duchamp?label=Latest%20Release&color=00aa00)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
+[![Downloads](https://img.shields.io/github/downloads/ahmed-alnassif/GKI-Duchamp/total?label=Downloads&color=00aa00)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
+![KernelSU](https://img.shields.io/badge/KernelSU-built--in-success)
 [![SukiSU Ultra](https://img.shields.io/badge/SukiSU--Ultra-built--in-success)](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
 ![Wild KSU](https://img.shields.io/badge/Wild--KSU-built--in-success)
 ![KernelSU Next](https://img.shields.io/badge/KernelSU--Next-built--in-success)
@@ -24,13 +25,16 @@ A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Du
 
     - **mq-deadline I/O scheduler** tuned for low latency on UFS 4.0 storage
 
-    - Network stack with **TCP BBRv3 + FQ + ECN** for reduced latency and faster WiFi/mobile data speeds
+    - Network stack with **TCP BBRv3** + **TCP Westwood+** + **FQ** + **ECN** + **IPv6 HL support** for reduced latency and faster WiFi/mobile data speeds
 
     - **F2FS** filesystem support included
 
-*   **🔧 Multiple Root Solutions:** Choose your preferred manager with variants featuring **KernelSU Next**, **SukiSU Ultra**, or **Wild KSU** and more in **Wild-KSU+Multiple-Managers** variant.
+*   **🔧 Multiple Variants:** Choose the configuration that fits your needs:
+    - **Root solutions:** KernelSU, KernelSU Next, SukiSU Ultra, Wild KSU, or Vanilla (no root)
+    - **Manager flexibility:** Multiple-Manager variants let you use your preferred manager app
 
-*   **🛡️ Enhanced System Integrity:** Integrated **SUSFS** (available in dedicated variants) for advanced kernel-level hiding and spoofing.
+*   **🛡️ SUSFS Integration:** Advanced kernel-level hiding and spoofing capabilities (available in dedicated variants)
+*   **🔒 Baseband Guard (BBG):** Lightweight LSM that blocks unauthorized writes to critical partitions and device nodes, protecting the baseband and boot chain from tampering
 
 ## 📱 Compatibility
 *   **Primary Device:** Poco X6 Pro (codenamed `duchamp`)
