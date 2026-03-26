@@ -1,0 +1,105 @@
+From 0d937aca1db6935a4619ac29e28deeb079887cb0 Mon Sep 17 00:00:00 2001
+From: Ahmed Al-Nassif <mr.ahmed.nassif@gmail.com>
+Date: Mon, 23 Mar 2026 08:14:41 +0300
+Subject: [PATCH] feat: add multiple managers
+
+Signed-off-by: Ahmed Al-Nassif <mr.ahmed.nassif@gmail.com>
+---
+ kernel/apk_sign.c     | 15 ++++++++-----
+ kernel/manager_hash.h | 51 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 60 insertions(+), 6 deletions(-)
+ create mode 100644 kernel/manager_hash.h
+
+diff --git a/kernel/apk_sign.c b/kernel/apk_sign.c
+index fc2afd4..505e492 100644
+--- a/kernel/apk_sign.c
++++ b/kernel/apk_sign.c
+@@ -17,6 +17,7 @@
+ #include "apk_sign.h"
+ #include "app_profile.h"
+ #include "klog.h" // IWYU pragma: keep
++#include "manager_hash.h"
+ 
+ struct sdesc {
+     struct shash_desc shash;
+@@ -360,12 +361,14 @@ bool is_manager_apk(char *path)
+         return false;
+     }
+ #endif
+-    if (check_v2_signature(path, EXPECTED_SIZE, EXPECTED_HASH)) {
+-        return true;
++
++    int i;
++    for (i = 0; i < MANAGER_SIGNATURES_COUNT; i++) {
++        if (check_v2_signature(path, manager_signatures[i].size,
++                               manager_signatures[i].hash)) {
++            return true;
++        }
+     }
+-#ifdef EXPECTED_SIZE2
+-    return check_v2_signature(path, EXPECTED_SIZE2, EXPECTED_HASH2);
+-#else
++
+     return false;
+-#endif
+ }
+diff --git a/kernel/manager_hash.h b/kernel/manager_hash.h
+new file mode 100644
+index 0000000..3e52607
+--- /dev/null
++++ b/kernel/manager_hash.h
+@@ -0,0 +1,51 @@
++#ifndef __KSU_H_MANAGER_HASH
++#define __KSU_H_MANAGER_HASH
++
++#include <linux/types.h>
++
++struct manager_signature {
++	unsigned size;
++	const char *hash;
++};
++
++static const struct manager_signature manager_signatures[] = {
++	// Primary (from Kbuild)
++	{
++		.size = EXPECTED_SIZE,
++		.hash = EXPECTED_HASH,
++	},
++	// wksu
++	{
++		.size = 0x381,
++		.hash = "52d52d8c8bfbe53dc2b6ff1c613184e2c03013e090fe8905d8e3d5dc2658c2e4",
++	},
++	// 5ec1cff
++	{
++		.size = 384,
++		.hash = "7e0c6d7278a3bb8e364e0fcba95afaf3666cf5ff3c245a3b63c8833bd0445cc4",
++	},
++	// rsuntk
++	{
++		.size = 0x396,
++		.hash = "f415f4ed9435427e1fdf7f1fccd4dbc07b3d6b8751e4dbcec6f19671f427870b",
++	},
++	// KOWX712
++	{
++		.size = 0x375,
++		.hash = "484fcba6e6c43b1fb09700633bf2fb4758f13cb0b2f4457b80d075084b26c588",
++	},
++	// /KernelSU-Next
++	{
++		.size = 0x3e6,
++		.hash = "79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7",
++	},
++	// pershoot
++	{
++		.size = 0x338,
++		.hash = "f26471a28031130362bce7eebffb9a0b8afc3095f163ce0c75a309f03b644a1f",
++	},
++};
++
++#define MANAGER_SIGNATURES_COUNT (sizeof(manager_signatures) / sizeof(struct manager_signature))
++
++#endif
+-- 
+2.52.0
+

@@ -75,6 +75,8 @@ susfs_included && VARIANT+="+SuSFS"
 log "Changelog of repos"
 gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
+gh api 'repos/tiann/KernelSU/commits?sha=main&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+> "$RELEASE_DIR/ksu_changelog.txt"
 gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/sukisu_changelog.txt"
 gh api 'repos/WildKernels/Wild_KSU/commits?sha=canary&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
@@ -145,8 +147,8 @@ fi
 if [ "$KSU" = "WKSU" ] || [ "$KSU" = "CWKSU" ]; then
   if susfs_included; then
     log "Wild-KSU+Multiple Managers included"
-    #install_ksu "ahmed-alnassif/Wild_KSU" "canary"
-    install_ksu "WildKernels/Wild_KSU" "canary"
+    install_ksu "ahmed-alnassif/Wild_KSU" "canary"
+    #install_ksu "WildKernels/Wild_KSU" "canary"
   else
     log "KernelSU-Next included"
     VARIANT="KernelSU-Next"
@@ -181,7 +183,8 @@ if [ "$KSU" = "KSU" ]; then
   fi
 
   if susfs_included; then
-    git clone https://github.com/tiann/KernelSU && echo "[+] Repository cloned."
+    VARIANT+="+Multiple-Managers"
+    git clone "https://github.com/tiann/KernelSU" && echo "[+] Repository cloned."
     log "SUSFS included"
     SUSFS_DIR="$WORKDIR/susfs"
     SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
@@ -189,6 +192,8 @@ if [ "$KSU" = "KSU" ]; then
     git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
     cd KernelSU
+    #git reset --hard "61c6313"
+    patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-add-multiple-managers.patch"
     patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
     rm -f kernel/ksu.c.orig
     sed -i "/    git pull && echo \"\[+\] Repository updated.\"/d" "kernel/setup.sh"
@@ -226,7 +231,7 @@ if [ "${TODO:-kernel}" = "kernel" ]; then
   if [ "$STATUS" = "BETA" ]; then
     SUFFIX="$LATEST_COMMIT_HASH"
   else
-    SUFFIX="${RELEASE}@${LATEST_COMMIT_HASH}"
+    SUFFIX="${RELEASE}/${LATEST_COMMIT_HASH}"
   fi
   config --set-str CONFIG_LOCALVERSION "-$KERNEL_NAME/$SUFFIX"
   config --disable CONFIG_LOCALVERSION_AUTO

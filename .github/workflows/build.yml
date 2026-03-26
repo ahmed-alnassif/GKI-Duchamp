@@ -358,6 +358,17 @@ jobs:
             echo "**Full Commit History:** [Browse all commits](https://github.com/ramabondanp/android_kernel_common-6.1/commits/android14-6.1-staging)"
             echo ""
             echo "---"
+            echo "**KernelSU Changelog (last 10 commits):**"
+            echo ""
+            if [ -f release-artifacts/ksu_changelog.txt ]; then
+              cat release-artifacts/ksu_changelog.txt
+            else
+              echo "*No changelog available*"
+            fi
+            echo ""
+            echo "**Full Commit History:** [Browse all commits](https://github.com/tiann/KernelSU/commits/main)"
+            echo ""
+            echo "---"
             echo "**Wild KSU Changelog (last 10 commits):**"
             echo ""
             if [ -f release-artifacts/wild_ksu_changelog.txt ]; then
