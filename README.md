@@ -3,6 +3,7 @@
 [![Build Status](https://github.com/ahmed-alnassif/GKI-Duchamp/actions/workflows/build.yml/badge.svg)](https://github.com/ahmed-alnassif/GKI-Duchamp/actions/workflows/build.yml)
 [![Latest Release](https://img.shields.io/github/v/release/ahmed-alnassif/GKI-Duchamp?label=Latest%20Release&color=00aa00)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
 [![Downloads](https://img.shields.io/github/downloads/ahmed-alnassif/GKI-Duchamp/total?label=Downloads&color=00aa00)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
+[![GitHub License](https://img.shields.io/github/license/ahmed-alnassif/GKI-Duchamp?logo=gnu)](/LICENSE)
 ![KernelSU](https://img.shields.io/badge/KernelSU-built--in-success)
 [![SukiSU Ultra](https://img.shields.io/badge/SukiSU--Ultra-built--in-success)](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
 ![Wild KSU](https://img.shields.io/badge/Wild--KSU-built--in-success)
@@ -36,6 +37,17 @@ A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Du
 *   **🛡️ SUSFS Integration:** Advanced kernel-level hiding and spoofing capabilities (available in dedicated variants)
 *   **🔒 Baseband Guard (BBG):** Lightweight LSM that blocks unauthorized writes to critical partitions and device nodes, protecting the baseband and boot chain from tampering
 
+## ⭐ Support the Development
+
+If you find this kernel useful, consider showing your support:
+
+*   **Star the Repository:** Give this project a ⭐ on GitHub to help others discover it
+*   **Share:** Spread the word in your community, forums, or with fellow Poco X6 Pro users
+*   **Report Issues:** Found a bug? Open an issue with detailed logs to help improve stability
+*   **Contribute:** Pull requests, suggestions, and constructive feedback are always welcome
+
+Your support helps keep this project maintained and improved for everyone.
+
 ## 📱 Compatibility
 *   **Primary Device:** Poco X6 Pro (codenamed `duchamp`)
 
@@ -44,3 +56,5 @@ A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Du
 
 ## ⬇️ Downloads
 Find the latest builds for all variants in the [Releases](https://github.com/ahmed-alnassif/GKI-Duchamp/releases) section.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ahmed-alnassif/GKI-Duchamp&type=date&legend=top-left)](https://www.star-history.com/#star-history/star-history&type=date&legend=top-left)
