@@ -193,6 +193,7 @@ if [ "$KSU" = "KSU" ]; then
 
     cd KernelSU
     #git reset --hard "61c6313"
+    git reset --soft HEAD~1
     patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-add-multiple-managers.patch"
     patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
     rm -f kernel/ksu.c.orig
