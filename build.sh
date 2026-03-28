@@ -196,7 +196,7 @@ if [ "$KSU" = "KSU" ]; then
     git reset --soft HEAD~1
     patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-add-multiple-managers.patch"
     patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
-    rm -f kernel/ksu.c.orig
+    rm -f kernel/manager/apk_sign.c.orig
     sed -i "/    git pull && echo \"\[+\] Repository updated.\"/d" "kernel/setup.sh"
     git config --global user.email "mr.ahmed.nassif@gmail.com"
     git config --global user.name "Ahmed Al-Nassif"
