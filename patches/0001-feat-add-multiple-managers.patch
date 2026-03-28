@@ -43,11 +43,11 @@ index 68b34d5..9fda644 100644
      return false;
 -#endif
  }
-diff --git a/kernel/manager_hash.h b/kernel/manager_hash.h
+diff --git a/kernel/manager/manager_hash.h b/kernel/manager/manager_hash.h
 new file mode 100644
 index 0000000..8550cc3
 --- /dev/null
-+++ b/kernel/manager_hash.h
++++ b/kernel/manager/manager_hash.h
 @@ -0,0 +1,51 @@
 +#ifndef __KSU_H_MANAGER_HASH
 +#define __KSU_H_MANAGER_HASH
