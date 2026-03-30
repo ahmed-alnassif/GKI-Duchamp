@@ -91,15 +91,7 @@ if [ ! -d "$CLANG_BIN" ]; then
     exit 1
 fi
 
-# Clone GNU Assembler
-log "Cloning GNU Assembler..."
-GAS_DIR="$WORKDIR/gas"
-git clone --depth=1 -q \
-  https://android.googlesource.com/platform/prebuilts/gas/linux-x86 \
-  -b main \
-  "$GAS_DIR"
-
-export PATH="${CLANG_BIN}:${GAS_DIR}:$PATH"
+export PATH="${CLANG_BIN}:$PATH"
 
 # Extract clang version
 COMPILER_STRING=$(clang -v 2>&1 | head -n 1 | sed 's/(https..*//' | sed 's/ version//')
