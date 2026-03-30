@@ -71,6 +71,9 @@ case "$KSU" in
   *) VARIANT="Vanilla" ;;
 esac
 susfs_included && VARIANT+="+SuSFS"
+SUSFS_DIR="$WORKDIR/susfs"
+SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
+SUSFS_BRANCH="gki-android14-6.1"
 
 log "Changelog of repos"
 gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
@@ -117,9 +120,6 @@ if [ "$KSU" = "SKSU" ]; then
 
   if susfs_included; then
     log "SUSFS included"
-    SUSFS_DIR="$WORKDIR/susfs"
-    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-    SUSFS_BRANCH="gki-android14-6.1"
     git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
     cp -R $SUSFS_PATCHES/fs/* ./fs
@@ -149,9 +149,6 @@ if [ "$KSU" = "WKSU" ] || [ "$KSU" = "CWKSU" ]; then
 
   if susfs_included; then
     log "SUSFS included"
-    SUSFS_DIR="$WORKDIR/susfs"
-    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-    SUSFS_BRANCH="gki-android14-6.1"
     git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
     cp -R $SUSFS_PATCHES/fs/* ./fs
@@ -178,9 +175,6 @@ if [ "$KSU" = "KSU" ]; then
     VARIANT+="+Multiple-Managers"
     git clone "https://github.com/tiann/KernelSU" && echo "[+] Repository cloned."
     log "SUSFS included"
-    SUSFS_DIR="$WORKDIR/susfs"
-    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-    SUSFS_BRANCH="gki-android14-6.1"
     git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
     cd KernelSU
