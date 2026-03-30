@@ -73,7 +73,7 @@ esac
 susfs_included && VARIANT+="+SuSFS"
 SUSFS_DIR="$WORKDIR/susfs"
 SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-SUSFS_BRANCH="gki-android14-6.1"
+SUSFS_BRANCH="gki-android14-6.1-dev"
 
 log "Changelog of repos"
 gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
