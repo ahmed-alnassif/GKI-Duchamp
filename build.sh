@@ -74,6 +74,7 @@ susfs_included && VARIANT+="+SuSFS"
 SUSFS_DIR="$WORKDIR/susfs"
 SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
 SUSFS_BRANCH="gki-android14-6.1-dev"
+SUSFS_PATCH="gki-android14-6.1"
 
 log "Changelog of repos"
 gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
@@ -126,7 +127,7 @@ if [ "$KSU" = "SKSU" ]; then
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
@@ -155,7 +156,7 @@ if [ "$KSU" = "WKSU" ] || [ "$KSU" = "CWKSU" ]; then
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
@@ -195,7 +196,7 @@ if [ "$KSU" = "KSU" ]; then
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
