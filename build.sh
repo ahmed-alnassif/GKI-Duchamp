@@ -73,7 +73,7 @@ esac
 susfs_included && VARIANT+="+SuSFS"
 SUSFS_DIR="$WORKDIR/susfs"
 SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-SUSFS_BRANCH="gki-android14-6.1-dev"
+SUSFS_BRANCH="gki-android14-6.1"
 SUSFS_PATCH="gki-android14-6.1"
 
 log "Changelog of repos"
