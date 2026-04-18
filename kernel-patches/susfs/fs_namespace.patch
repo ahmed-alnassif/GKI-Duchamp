@@ -10,7 +10,7 @@ From ahmed-alnassif
 +#include <linux/susfs_def.h>
 +
 +extern bool susfs_is_current_ksu_domain(void);
-+extern bool susfs_is_sdcard_android_data_decrypted __read_mostly;
++extern struct static_key_false susfs_set_sdcard_android_data_decrypted_key_false;
 +
 +#define CL_COPY_MNT_NS BIT(25) /* used by copy_mnt_ns() */
 +
