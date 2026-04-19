@@ -1,28 +1,28 @@
-From 0d937aca1db6935a4619ac29e28deeb079887cb0 Mon Sep 17 00:00:00 2001
+From c711fff8f4e9f00b23cf1194cd20baca403e1b3b Mon Sep 17 00:00:00 2001
 From: Ahmed Al-Nassif <mr.ahmed.nassif@gmail.com>
-Date: Mon, 23 Mar 2026 08:14:41 +0300
+Date: Fri, 27 Mar 2026 17:33:58 +0300
 Subject: [PATCH] feat: add multiple managers
 
 Signed-off-by: Ahmed Al-Nassif <mr.ahmed.nassif@gmail.com>
 ---
- kernel/apk_sign.c     | 15 ++++++++-----
- kernel/manager_hash.h | 51 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/manager/apk_sign.c | 15 +++++++-----
+ kernel/manager_hash.h     | 51 +++++++++++++++++++++++++++++++++++++++
  2 files changed, 60 insertions(+), 6 deletions(-)
  create mode 100644 kernel/manager_hash.h
 
-diff --git a/kernel/apk_sign.c b/kernel/apk_sign.c
-index fc2afd4..505e492 100644
---- a/kernel/apk_sign.c
-+++ b/kernel/apk_sign.c
+diff --git a/kernel/manager/apk_sign.c b/kernel/manager/apk_sign.c
+index 68b34d5..9fda644 100644
+--- a/kernel/manager/apk_sign.c
++++ b/kernel/manager/apk_sign.c
 @@ -17,6 +17,7 @@
- #include "apk_sign.h"
- #include "app_profile.h"
+ #include "manager/apk_sign.h"
+ #include "uapi/app_profile.h"
  #include "klog.h" // IWYU pragma: keep
-+#include "manager_hash.h"
++#include "manager/manager_hash.h"
  
  struct sdesc {
      struct shash_desc shash;
-@@ -360,12 +361,14 @@ bool is_manager_apk(char *path)
+@@ -353,12 +354,14 @@ bool is_manager_apk(char *path)
          return false;
      }
  #endif
@@ -43,11 +43,11 @@ index fc2afd4..505e492 100644
      return false;
 -#endif
  }
-diff --git a/kernel/manager_hash.h b/kernel/manager_hash.h
+diff --git a/kernel/manager/manager_hash.h b/kernel/manager/manager_hash.h
 new file mode 100644
-index 0000000..3e52607
+index 0000000..8550cc3
 --- /dev/null
-+++ b/kernel/manager_hash.h
++++ b/kernel/manager/manager_hash.h
 @@ -0,0 +1,51 @@
 +#ifndef __KSU_H_MANAGER_HASH
 +#define __KSU_H_MANAGER_HASH

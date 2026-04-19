@@ -13,7 +13,7 @@ ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AK3-GKID"
 KERNEL_DEFCONFIG="gki_defconfig"
 
 if [ "$KVER" == "6.1" ]; then
-  KERNEL_BRANCH="android14-6.1"
+  KERNEL_BRANCH="android14-6.1-staging"
 else
   echo "Unsupported kernel existing..."
   exit 1
@@ -71,6 +71,10 @@ case "$KSU" in
   *) VARIANT="Vanilla" ;;
 esac
 susfs_included && VARIANT+="+SuSFS"
+SUSFS_DIR="$WORKDIR/susfs"
+SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
+SUSFS_BRANCH="gki-android14-6.1"
+SUSFS_PATCH="gki-android14-6.1"
 
 log "Changelog of repos"
 gh api "repos/ramabondanp/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
@@ -91,15 +95,7 @@ if [ ! -d "$CLANG_BIN" ]; then
     exit 1
 fi
 
-# Clone GNU Assembler
-log "Cloning GNU Assembler..."
-GAS_DIR="$WORKDIR/gas"
-git clone --depth=1 -q \
-  https://android.googlesource.com/platform/prebuilts/gas/linux-x86 \
-  -b main \
-  "$GAS_DIR"
-
-export PATH="${CLANG_BIN}:${GAS_DIR}:$PATH"
+export PATH="${CLANG_BIN}:$PATH"
 
 # Extract clang version
 COMPILER_STRING=$(clang -v 2>&1 | head -n 1 | sed 's/(https..*//' | sed 's/ version//')
@@ -111,30 +107,27 @@ log "Applying BBRv3 patches"
 patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
 
 log "BBG included"
-wget -O- "https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh" | bash
+wget -qO- "https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh" | bash
 sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' "security/Kconfig"
 
 if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
   if susfs_included; then
-    #install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
-    install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
+    install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
+    #install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
   else
     install_ksu "SukiSU-Ultra/SukiSU-Ultra" "main"
   fi
 
   if susfs_included; then
     log "SUSFS included"
-    SUSFS_DIR="$WORKDIR/susfs"
-    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-    SUSFS_BRANCH="gki-android14-6.1"
     git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
     cp -R $SUSFS_PATCHES/fs/* ./fs
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
@@ -157,16 +150,13 @@ if [ "$KSU" = "WKSU" ] || [ "$KSU" = "CWKSU" ]; then
 
   if susfs_included; then
     log "SUSFS included"
-    SUSFS_DIR="$WORKDIR/susfs"
-    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-    SUSFS_BRANCH="gki-android14-6.1"
     git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
     cp -R $SUSFS_PATCHES/fs/* ./fs
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
@@ -186,16 +176,14 @@ if [ "$KSU" = "KSU" ]; then
     VARIANT+="+Multiple-Managers"
     git clone "https://github.com/tiann/KernelSU" && echo "[+] Repository cloned."
     log "SUSFS included"
-    SUSFS_DIR="$WORKDIR/susfs"
-    SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
-    SUSFS_BRANCH="gki-android14-6.1"
     git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
     cd KernelSU
     #git reset --hard "61c6313"
+    git reset --soft HEAD~1
     patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-add-multiple-managers.patch"
     patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
-    rm -f kernel/ksu.c.orig
+    rm -f kernel/manager/apk_sign.c.orig
     sed -i "/    git pull && echo \"\[+\] Repository updated.\"/d" "kernel/setup.sh"
     git config --global user.email "mr.ahmed.nassif@gmail.com"
     git config --global user.name "Ahmed Al-Nassif"
@@ -208,7 +196,7 @@ if [ "$KSU" = "KSU" ]; then
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_BRANCH}.patch || echo "Common kernel SUSFS patch failed."
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
@@ -245,6 +233,7 @@ export KBUILD_BUILD_TIMESTAMP=$(date)
 export KCFLAGS="-w"
 MAKE_ARGS=(
   LLVM=1
+  LLVM_IAS=1
   ARCH=arm64
   CROSS_COMPILE=aarch64-linux-gnu-
   CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
