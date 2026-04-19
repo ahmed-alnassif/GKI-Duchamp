@@ -48,6 +48,18 @@ If you find this kernel useful, consider showing your support:
 
 Your support helps keep this project maintained and improved for everyone.
 
+## 🧩 Recommended Modules for Poco X6 Pro
+
+Enhance your device with these companion modules:
+
+| Module | Description |
+|--------|-------------|
+| [**Thermal Manager**](https://github.com/ahmed-alnassif/Thermal-Manager) | Fixes the thermal mode/profile reset issue on Poco X6 Pro. Monitor and force-persist your chosen mode: **Balanced** ⚖️, **Battery Saver** 🔋, **Performance** ⚡, or **Gaming** 🎮. Includes **WebUI** for instant switching, auto battery saver when screen off, and mode persistence after reboot. |
+| [**DSP AudioFix**](https://github.com/ahmed-alnassif/DSP-AudioFix) | Simple fix for distorted audio on Poco X6 Pro and similar Xiaomi/MediaTek devices with Awinic smart amps. |
+
+>[!TIP]
+>Both modules are designed specifically for Poco X6 Pro hardware quirks and work seamlessly with any GKID kernel variant.
+
 ## 📱 Compatibility
 *   **Primary Device:** Poco X6 Pro (codenamed `duchamp`)
 
