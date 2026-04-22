@@ -65,6 +65,7 @@ log "Setting Kernel variant..."
 case "$KSU" in
   "SKSU") VARIANT="SukiSU-Ultra" ;;
   "KSU") VARIANT="KernelSU" ;;
+  "KSUN") VARIANT="KernelSU-Next" ;;
   "WKSU") VARIANT="Wild-KSU+Multiple-Managers" ;;
   "CWKSU") VARIANT="Compat+Wild-KSU+Multiple-Managers" ;;
   "no") VARIANT="Vanilla" ;;
@@ -137,32 +138,23 @@ if [ "$KSU" = "SKSU" ]; then
 
 fi
 
-if [ "$KSU" = "WKSU" ] || [ "$KSU" = "CWKSU" ]; then
-  if susfs_included; then
-    log "Wild-KSU+Multiple Managers included"
-    install_ksu "ahmed-alnassif/Wild_KSU" "canary"
-    #install_ksu "WildKernels/Wild_KSU" "canary"
-  else
-    log "KernelSU-Next included"
-    VARIANT="KernelSU-Next"
-    install_ksu "KernelSU-Next/KernelSU-Next" "dev"
-  fi
+if susfs_included && { [ "$KSU" = "WKSU" ] || [ "$KSU" = "CWKSU" ]; }; then
+  log "Wild-KSU+Multiple Managers included"
+  install_ksu "ahmed-alnassif/Wild_KSU" "canary"
+  #install_ksu "WildKernels/Wild_KSU" "canary"
+  
+  log "SUSFS included"
+  git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
 
-  if susfs_included; then
-    log "SUSFS included"
-    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+  cp -R $SUSFS_PATCHES/fs/* ./fs
+  cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
-    cp -R $SUSFS_PATCHES/fs/* ./fs
-    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
+  patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
+  patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
-    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
+ SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
-   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
-
-   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
-
-  fi
+ echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
 fi
 
