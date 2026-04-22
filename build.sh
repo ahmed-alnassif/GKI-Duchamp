@@ -198,6 +198,32 @@ if [ "$KSU" = "KSU" ]; then
 
 fi
 
+if [ "$KSU" = "KSUN" ]; then
+  log "KernelSU-Next included"
+  if susfs_included; then
+    install_ksu "pershoot/KernelSU-Next" "dev-susfs"
+  else
+    install_ksu "KernelSU-Next/KernelSU-Next" "dev"
+  fi
+
+  if susfs_included; then
+    log "SUSFS included"
+    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+
+    cp -R $SUSFS_PATCHES/fs/* ./fs
+    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
+
+    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
+
+   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
+
+   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+
+  fi
+
+fi
+
 # Replace Placeholder in zip name
 AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
 AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
