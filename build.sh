@@ -112,8 +112,8 @@ sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/se
 if [ "$KSU" = "SKSU" ]; then
   log "SukiSU-Ultra included"
   if susfs_included; then
-    install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
-    #install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
+    #install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
+    install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
   else
     install_ksu "SukiSU-Ultra/SukiSU-Ultra" "main"
   fi
