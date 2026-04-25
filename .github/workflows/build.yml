@@ -74,7 +74,7 @@ on:
         default: true
 
       BUILD_KSU_SUSFS:
-        description: "Build with KernelSU and its forks (SukiSU, Wild-KSU) + SUSFS"
+        description: "Build with KernelSU and its forks (SukiSU Ultra, KernelSU Next) + SUSFS"
         type: boolean
         default: true
 
@@ -94,27 +94,27 @@ jobs:
           ENTRIES=""
 
           if [[ "${{ github.event.inputs.BUILD_VANILLA }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"Vanilla\",\"KSU\":\"no\",\"KSU_SUSFS\":\"false\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"Vanilla\",\"KSU\":\"no\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
           fi
 
           if [[ "${{ github.event.inputs.BUILD_KSU }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"false\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"KSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
           fi
 
           if [[ "${{ github.event.inputs.BUILD_KSUN }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSUN\",\"KSU\":\"KSUN\",\"KSU_SUSFS\":\"false\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"KSUN\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
           fi
 
           if [[ "${{ github.event.inputs.BUILD_SKSU }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"SKSU\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"false\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"SKSU\",\"KSU\":\"SKSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
           fi
 
           if [[ "${{ github.event.inputs.BUILD_KSU_SUSFS }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"KSUN+SUSFS\",\"KSU\":\"KSUN\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"WKSU+SUSFS\",\"KSU\":\"WKSU\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"Compat+WKSU+SUSFS\",\"KSU\":\"CWKSU\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"SKSU+SUSFS\",\"KSU\":\"SKSU\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"KSUN+SUSFS\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"Compat+KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_COMPAT\":\"true\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"Compat+KSUN+SUSFS\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"true\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"SKSU+SUSFS\",\"KSU\":\"SKSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
           fi
 
           # Remove trailing comma and wrap in array
@@ -168,6 +168,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
           KSU: ${{ matrix.KSU }}
+          KSU_COMPAT: ${{ matrix.KSU_COMPAT }}
           KSU_SUSFS: ${{ matrix.KSU_SUSFS }}
           LAST_BUILD: ${{ inputs.LAST_BUILD }}
           TODO: ${{ inputs.TODO }}
@@ -319,7 +320,7 @@ jobs:
             - ⚙️ **Compiler:** ${{ env.COMPILER_STRING }}
 
             >[!Important]
-            >- Got a bootloop? Switch to Compat+Wild-KSU+Multiple-Managers+SuSFS variant.
+            >- Got a bootloop? Switch to a Compat variant.
 
             **Performance & Efficiency Tweaks**
             Balanced optimizations for smoother UI, better multitasking & gaming on Poco X6 Pro (and similar **6.1.xx-android14** GKI kernel devices):
@@ -370,15 +371,15 @@ jobs:
             echo "**Full Commit History:** [Browse all commits](https://github.com/tiann/KernelSU/commits/main)"
             echo ""
             echo "---"
-            echo "**Wild KSU Changelog (last 10 commits):**"
+            echo "**KernelSU Next Changelog (last 10 commits):**"
             echo ""
-            if [ -f release-artifacts/wild_ksu_changelog.txt ]; then
-              cat release-artifacts/wild_ksu_changelog.txt
+            if [ -f release-artifacts/ksun_changelog.txt ]; then
+              cat release-artifacts/ksun_changelog.txt
             else
               echo "*No changelog available*"
             fi
             echo ""
-            echo "**Full Commit History:** [Browse all commits](https://github.com/WildKernels/Wild_KSU/commits/canary)"
+            echo "**Full Commit History:** [Browse all commits](https://github.com/pershoot/KernelSU-Next/commits/dev-susfs)"
             echo ""
             echo "---"
             echo "**SukiSU Ultra Changelog (last 10 commits):**"

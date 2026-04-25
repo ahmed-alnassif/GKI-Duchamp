@@ -10,9 +10,6 @@ if [ "$KSU" != "no" ]; then
 CONFIG_KSU=y
 CONFIG_KPM=y
 EOF
-  if [ "$KSU" = "WKSU" ]; then
-    echo "CONFIG_KPROBES=y" >> $DEFCONFIG
-  fi
 fi
 
 if [ "$KSU_SUSFS" = "true" ]; then
@@ -77,7 +74,7 @@ CONFIG_IP6_NF_MATCH_HL=y
 # BBG (baseband-guard)
 CONFIG_BBG=y
 EOF
-if [ "$KSU" != "CWKSU" ]; then
+if [ "$KSU_COMPAT" != "true" ]; then
   echo "Disable useless debugging configs for performance and resources"
   cat >> $DEFCONFIG <<EOF
 # Disable useless debugging configs for performance and resources
