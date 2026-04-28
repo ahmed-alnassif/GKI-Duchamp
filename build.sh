@@ -64,6 +64,7 @@ cd $WORKDIR
 log "Setting Kernel variant..."
 case "$KSU" in
   "SKSU") VARIANT="SukiSU-Ultra" ;;
+  "RSKSU") VARIANT="ReSukiSU" ;;
   "KSU") VARIANT="KernelSU" ;;
   "KSUN") VARIANT="KernelSU-Next" ;;
   "no") VARIANT="Vanilla" ;;
@@ -128,11 +129,30 @@ if [ "$KSU" = "SKSU" ]; then
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
     patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
-   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
+    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
 
-   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+    echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
   fi
+
+fi
+
+if susfs_included && [ "$KSU" = "RSKSU" ]; then
+  log "ReSukiSU included"
+  install_ksu "ReSukiSU/ReSukiSU" "main"
+
+  log "SUSFS included"
+  git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+
+  cp -R $SUSFS_PATCHES/fs/* ./fs
+  cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
+
+  patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
+  patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
+
+  SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
+
+  echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
 fi
 

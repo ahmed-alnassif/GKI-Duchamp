@@ -115,6 +115,7 @@ jobs:
             ENTRIES="${ENTRIES}{\"name\":\"Compat+KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_COMPAT\":\"true\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"Compat+KSUN+SUSFS\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"true\",\"KSU_SUSFS\":\"true\"},"
             #ENTRIES="${ENTRIES}{\"name\":\"SKSU+SUSFS\",\"KSU\":\"SKSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
+            ENTRIES="${ENTRIES}{\"name\":\"RSKSU+SUSFS\",\"KSU\":\"RSKSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
           fi
 
           # Remove trailing comma and wrap in array
