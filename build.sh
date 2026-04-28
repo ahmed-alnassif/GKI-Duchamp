@@ -11,13 +11,7 @@ TIMEZONE="Asia/Damascus"
 ANYKERNEL_REPO="https://github.com/ahmed-alnassif/AK3-GKID"
 
 KERNEL_DEFCONFIG="gki_defconfig"
-
-if [ "$KVER" == "6.1" ]; then
-  KERNEL_BRANCH="android14-6.1-staging"
-else
-  echo "Unsupported kernel existing..."
-  exit 1
-fi
+KERNEL_BRANCH="android14-6.1-staging"
 
 # Set timezone
 sudo timedatectl set-timezone "$TIMEZONE" || export TZ="$TIMEZONE"
@@ -51,7 +45,7 @@ trap 'echo "!!! Received SIGINT at $(date)" >> "$BUILD_LOGS"' INT
 
 # Clone kernel source
 log "Cloning kernel source from $(simplify_gh_url "$KERNEL_REPO")"
-git clone -q --depth=1 $KERNEL_REPO -b $KERNEL_BRANCH $KSRC
+git clone -q --depth=1 "$KERNEL_REPO" -b "$KERNEL_BRANCH" "$KSRC"
 
 cd $KSRC
 LINUX_VERSION=$(make kernelversion)
@@ -71,6 +65,7 @@ case "$KSU" in
   *) VARIANT="Vanilla" ;;
 esac
 susfs_included && VARIANT+="+SuSFS"
+SUSFS_URL="https://gitlab.com/simonpunk/susfs4ksu"
 SUSFS_DIR="$WORKDIR/susfs"
 SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
 SUSFS_BRANCH="gki-android14-6.1"
@@ -89,7 +84,7 @@ gh api 'repos/pershoot/KernelSU-Next/commits?sha=dev-susfs&per_page=10' --jq '.[
 # Download Clang
 log "Downloading Clang..."
 CLANG_BIN="$WORKDIR/greenforce-clang/bin"
-wget -qO- https://raw.githubusercontent.com/greenforce-project/greenforce_clang/refs/heads/main/get_clang.sh | bash &> /dev/null
+wget -qO- "https://raw.githubusercontent.com/greenforce-project/greenforce_clang/refs/heads/main/get_clang.sh" | bash &> /dev/null
 if [ ! -d "$CLANG_BIN" ]; then
     echo "Error: Clang not found in ${CLANG_BIN}."
     exit 1
@@ -121,7 +116,7 @@ if [ "$KSU" = "SKSU" ]; then
 
   if susfs_included; then
     log "SUSFS included"
-    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+    git clone --depth=1 -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
 
     cp -R $SUSFS_PATCHES/fs/* ./fs
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
@@ -130,7 +125,6 @@ if [ "$KSU" = "SKSU" ]; then
     patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
     SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
-
     echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
   fi
@@ -142,7 +136,7 @@ if susfs_included && [ "$KSU" = "RSKSU" ]; then
   install_ksu "ReSukiSU/ReSukiSU" "main"
 
   log "SUSFS included"
-  git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+  git clone --depth=1 -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
 
   cp -R $SUSFS_PATCHES/fs/* ./fs
   cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
@@ -151,7 +145,6 @@ if susfs_included && [ "$KSU" = "RSKSU" ]; then
   patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
-
   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
 fi
@@ -166,7 +159,7 @@ if [ "$KSU" = "KSU" ]; then
     VARIANT+="+Multiple-Managers"
     git clone "https://github.com/tiann/KernelSU" && echo "[+] Repository cloned."
     log "SUSFS included"
-    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+    git clone --depth=1 -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
 
     cd KernelSU
     #git reset --hard "61c6313"
@@ -188,9 +181,8 @@ if [ "$KSU" = "KSU" ]; then
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
     patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
-   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
-
-   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
+    echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
   fi
 
@@ -206,7 +198,7 @@ if [ "$KSU" = "KSUN" ]; then
 
   if susfs_included; then
     log "SUSFS included"
-    git clone --depth=1 -q https://gitlab.com/simonpunk/susfs4ksu -b $SUSFS_BRANCH $SUSFS_DIR
+    git clone --depth=1 -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
 
     cp -R $SUSFS_PATCHES/fs/* ./fs
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
@@ -214,9 +206,8 @@ if [ "$KSU" = "KSUN" ]; then
     patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
     patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
 
-   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
-
-   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
+    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
+    echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
   fi
 
@@ -273,9 +264,9 @@ make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 # SUSFS debugging
 if susfs_included; then
 
-  #log "=== DEBUG: Checking defconfig for SUSFS ==="
-  #grep -i susfs ./arch/arm64/configs/gki_defconfig || echo "❌ SUSFS NOT FOUND in defconfig!"
-  #echo ""
+  log "=== DEBUG: Checking defconfig for SUSFS ==="
+  grep -i susfs ./arch/arm64/configs/gki_defconfig || echo "❌ SUSFS NOT FOUND in defconfig!"
+  echo ""
 
   # DEBUG: Check if SUSFS made it to .config
   log "=== DEBUG: Checking .config for SUSFS ==="
@@ -357,10 +348,8 @@ fi
 if [ "$STATUS" != "BETA" ]; then
   (
     echo "LINUX_VERSION=$LINUX_VERSION"
-    echo "SUSFS_VERSION=$(curl -s https://gitlab.com/simonpunk/susfs4ksu/raw/gki-android14-6.1/kernel_patches/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g')"
+    echo "SUSFS_VERSION=$(curl -s "$SUSFS_URL"/raw/gki-android14-6.1/kernel_patches/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g')"
     echo "KERNEL_NAME=$KERNEL_NAME"
     echo "RELEASE_REPO=$(simplify_gh_url "$GKI_RELEASES_REPO")"
   ) >> $RELEASE_DIR/info.txt
 fi
-
-exit 0

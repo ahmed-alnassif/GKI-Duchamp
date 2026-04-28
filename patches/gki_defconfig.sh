@@ -15,7 +15,7 @@ fi
 if [ "$KSU_SUSFS" = "true" ]; then
   echo "🔧 Mode: SuSFS Hook Enabled"
   cat >> $DEFCONFIG <<EOF
-# --- SuSFS Configuration ---
+# SuSFS Configuration
 CONFIG_KSU_SUSFS=y
 CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n
 CONFIG_KSU_SUSFS_SUS_MAP=y
@@ -75,7 +75,7 @@ CONFIG_IP6_NF_MATCH_HL=y
 CONFIG_BBG=y
 EOF
 if [ "$KSU_COMPAT" != "true" ]; then
-  echo "Disable useless debugging configs for performance and resources"
+  echo "🔧 Disable useless debugging configs for performance and resources"
   cat >> $DEFCONFIG <<EOF
 # Disable useless debugging configs for performance and resources
 CONFIG_UBSAN=n

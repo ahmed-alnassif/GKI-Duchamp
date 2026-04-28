@@ -11,8 +11,6 @@ on:
         type: string
       LAST_BUILD:
         type: string
-      KERNEL_VERSION:
-        type: string
       STATUS:
         type: string
       TEST:
@@ -27,15 +25,6 @@ on:
         options:
           - "kernel"
           - "defconfig"
-
-      KERNEL_VERSION:
-        description: Which kernel version do you want to build?
-        default: "6.1"
-        type: choice
-        options:
-          - "6.6"
-          - "6.1"
-          - "5.10"
 
       STATUS:
         description: Run type
@@ -175,7 +164,6 @@ jobs:
           TODO: ${{ inputs.TODO }}
           STATUS: ${{ inputs.STATUS }}
           TEST: ${{ inputs.TEST }}
-          KVER: ${{ inputs.KERNEL_VERSION }}
           BUILD_NAME: ${{ matrix.name }}
           RUN_NUM: -r${{ github.run_number }}
         run: |
