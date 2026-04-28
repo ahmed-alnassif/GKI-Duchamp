@@ -150,8 +150,16 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gh bc bison flex libssl-dev libelf-dev dwarves cpio
+          sudo apt-get install -y ccache gh bc bison flex libssl-dev libelf-dev dwarves cpio
           pip install lxml
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        id: ccache-cache
+        with:
+          path: ~/.ccache
+          key: ccache-${{ matrix.name }}
+          restore-keys: ccache-${{ matrix.name }}
 
       - name: Run Build Script
         env:
