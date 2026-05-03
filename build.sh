@@ -103,6 +103,45 @@ echo "COMPILER_STRING=$COMPILER_STRING" >> $GITHUB_ENV
 
 cd $KSRC
 
+log "Applying common performance patches"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/optimized_mem_operations.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/file_struct_8bytes_align.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/reduce_cache_pressure.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/mem_opt_prefetch.patch"
+
+log "Applying architecture optimizations"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/optimise_memcmp.patch"
+
+log "Applying network, I/O & power management patches"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/minimise_wakeup_time.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/int_sqrt.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/force_tcp_nodelay.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/reduce_gc_thread_sleep_time.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/add_timeout_wakelocks_globally.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/f2fs_reduce_congestion.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/reduce_freeze_timeout.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/f2fs_enlarge_min_fsync_blocks.patch"
+
+log "Applying clear page alignment"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/clear_page_16bytes_align.patch"
+
+log "Applying CPU frequency & scheduler patches"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/add_limitation_scaling_min_freq.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/re_write_limitation_scaling_min_freq.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/adjust_cpu_scan_order.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/avoid_extra_s2idle_wake_attempts.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/disable_cache_hot_buddy.patch"
+
+log "Applying filesystem & network tuning"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/increase_ext4_default_commit_age.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/increase_sk_mem_packets.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/reduce_pci_pme_wakeups.patch"
+
+log "Applying log silencing patches"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/silence_irq_cpu_logspam.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/silence_system_logspam.patch"
+patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/use_unlikely_wrap_cpufreq.patch"
+
 log "Applying unicode_bypass_fix_6.1.patch"
 patch -p1 --fuzz=3 < "$KERNEL_PATCHES/common/unicode_bypass_fix_6.1.patch"
 
