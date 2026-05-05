@@ -179,6 +179,11 @@ jobs:
           chmod +x *.sh py/*.py
           ./build.sh
 
+      - name: ccache stats
+        if: always()
+        run: |
+          ccache --show-stats
+
       - name: Save environment for release
         if: always()
         run: |
