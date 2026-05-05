@@ -327,8 +327,16 @@ jobs:
             - Modern memory: **Multi-Gen LRU (MGLRU)** enabled → huge multitasking & battery win
             - zRAM: compressed swap with **LZ4** + **writeback** + tracking → more usable RAM in heavy use
             - I/O scheduler: **mq-deadline** as default → low-latency on fast UFS 4.0 storage
-            - Networking: **TCP BBRv3** + **TCP Westwood+** + **FQ** + **ECN** + **IPv6 HL support** → better speed on WiFi/mobile data
-            - Filesystem extras: F2FS support
+            - Networking: **TCP BBRv3** + **TCP Westwood+** + **FQ** + **ECN** + **IPv6 HL support** + **TCP_NODELAY forced** → better speed on WiFi/mobile data
+            - IP Set full support + IPv6 NAT → better tethering & VPN performance
+            - F2FS tuning: reduced GC sleep (50ms), enlarged fsync blocks, reduced congestion timeout → smoother I/O
+            - ext4 commit age extended to 30s → fewer disk writes, better battery
+            - Memory optimizations: faster memcpy, memcmp, memset (up to 50%) + 3x faster integer sqrt → lower CPU overhead
+            - File struct 8-byte aligned + clear page 16-byte aligned → better cache performance
+            - Freeze timeout reduced 20s→1s + wakelock cap 500ms + minimized alarm wakeup → less battery drain
+            - Scheduler: efficient CPU scan order + DynamIQ cache buddy disabled + branch prediction hints → smarter core selection
+            - Unicode filename validation → prevents crashes from invalid UTF-8 on vfat/exfat
+            - Silenced IRQ & system log spam → cleaner dmesg, easier debugging
             - BBG (baseband-guard) a lightweight **LSM (Linux Security Module)** for the Android kernel, designed to block unauthorized writes to critical partitions/device nodes at the system level. This reduces the risk of malicious or accidental tampering with critical components such as the baseband and boot chain.
 
             >[!Tip]
