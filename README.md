@@ -20,15 +20,41 @@ A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Du
 
     - **Multi-Gen LRU (MGLRU)** enabled for better multitasking and battery efficiency
 
+    - **Optimized memory operations** (memcpy, memcmp, memset) from ARM-optimized-routines for up to 50% faster string/memory handling
+
+    - **3x faster integer square root** reducing CPU time in cpufreq calculations
+
     - Optimized **zRAM** with LZ4 compression + writeback + tracking for more and faster usable RAM under heavy loads
 
     - CPU governors: **schedutil + ondemand** for efficient yet responsive scaling
 
     - **mq-deadline I/O scheduler** tuned for low latency on UFS 4.0 storage
 
-    - Network stack with **TCP BBRv3** + **TCP Westwood+** + **FQ** + **ECN** + **IPv6 HL support** for reduced latency and faster WiFi/mobile data speeds
+    - Network stack with **TCP BBRv3** + **TCP Westwood+** + **FQ** + **ECN** + **IPv6 HL support** + **TCP_NODELAY forced** for reduced latency and faster WiFi/mobile data speeds
 
-    - **F2FS** filesystem support included
+    - **F2FS** filesystem tuning (reduced GC sleep to 50ms, enlarged fsync blocks, reduced congestion timeout)
+
+    - **ext4** commit age extended to 30s for fewer disk writes
+
+    - **IP Set** full support + **IPv6 NAT** for better tethering and VPN performance
+
+    - **Filesystem Unicode fix** preventing crashes from invalid UTF-8 filenames on vfat/exfat
+
+*   **🔋 Battery & Power Optimizations:**
+    - Freeze timeout reduced from 20s to **1s** for faster deadlock detection
+    - Global wakelock timeout capped at **500ms** to prevent infinite battery drain
+    - Alarmtimer wakeup minimized using actual timer values instead of hardcoded 2s
+    - Excessive s2idle wake attempts eliminated (single wake instead of multiple)
+    - PCI PME check interval extended to reduce unnecessary wakeups
+    - VFS cache pressure reduced to **50** for better RAM utilization
+    - Cache hot buddy disabled for DynamIQ Shared Unit efficiency
+
+*   **🧠 Scheduler & CPU Optimizations:**
+    - CPU scan order adjusted for efficient idle core selection
+    - Branch prediction hints optimized in cpufreq paths
+    - File struct aligned to 8 bytes for better cache performance
+    - Clear page aligned to 16 bytes reducing CPU time on page allocation
+    - Memory prefetch optimizations for copy operations
 
 *   **🔧 Multiple Variants:** Choose the configuration that fits your needs:
     - **Root solutions:** KernelSU, KernelSU Next, SukiSU Ultra, Wild KSU, or Vanilla (no root)
