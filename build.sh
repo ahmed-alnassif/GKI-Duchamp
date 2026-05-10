@@ -96,10 +96,14 @@ export PATH="${CLANG_BIN}:$PATH"
 export CCACHE_DIR="$HOME/.ccache"
 export CC="ccache clang"
 export CXX="ccache clang++"
+export CCACHE_BASEDIR="$WORKDIR"
+export CCACHE_COMPILERCHECK=content
 
 ccache --max-size=5G
-ccache --set-config=sloppiness="pch_defines,time_macros,file_macro"
+ccache --set-config=sloppiness="pch_defines,time_macros,file_macro,include_file_mtime,include_file_ctime"
 ccache --set-config=hash_dir=false
+ccache --set-config=base_dir="$WORKDIR"
+ccache --set-config=compiler_check=content
 
 # Extract clang version
 COMPILER_STRING=$(clang -v 2>&1 | head -n 1 | sed 's/(https..*//' | sed 's/ version//')
