@@ -223,6 +223,7 @@ if [ "$KSU" = "KSU" ]; then
     patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-add-multiple-managers.patch"
     patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-throne_tracker-offload-to-kthread.patch"
     patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
+    patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-escape-persistent_allow_list-to-kthread.patch"
     sed -i "/    git pull && echo \"\[+\] Repository updated.\"/d" "kernel/setup.sh"
     git config --global user.email "mr.ahmed.nassif@gmail.com"
     git config --global user.name "Ahmed Al-Nassif"
