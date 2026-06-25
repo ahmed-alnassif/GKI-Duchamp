@@ -116,5 +116,6 @@ if [ "$FULLLTO" == "true" ]; then
   echo "⚙️ FullLTO optimization enabled"
   cat >> $DEFCONFIG <<EOF
 CONFIG_LTO_CLANG_FULL=y
+CONFIG_CFI_CLANG=n
 EOF
 fi
