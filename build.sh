@@ -87,11 +87,12 @@ gh api 'repos/pershoot/KernelSU-Next/commits?sha=dev-susfs&per_page=10' --jq '.[
 
 # Download Clang
 log "Downloading Clang..."
-CLANG_BIN="$WORKDIR/neutron-clang/bin"
-mkdir -p "$WORKDIR/neutron-clang"
-cd "$WORKDIR/neutron-clang"
-bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S &> /dev/null
-cd $OLDPWD
+CLANG_DIR="$WORKDIR/clang"
+CLANG_BIN="$CLANG_DIR/bin"
+wget -q "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android14-release/clang-r487747c.tar.gz" -O "clang.tar.gz" &> /dev/null
+mkdir -p "$CLANG_DIR"
+tar -xf "clang.tar.gz" -C $CLANG_DIR
+rm -f "clang.tar.gz"
 if [ ! -d "$CLANG_BIN" ]; then
     echo "Error: Clang not found in ${CLANG_BIN}."
     exit 1
