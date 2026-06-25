@@ -67,6 +67,11 @@ on:
         type: boolean
         default: true
 
+      BUILD_FULLLTO:
+        description: "Build with fullLTO optimization enabled"
+        type: boolean
+        default: false
+
 env:
   MAN_DISABLE: true
   DEBIAN_FRONTEND: noninteractive
@@ -182,6 +187,7 @@ jobs:
           TODO: ${{ inputs.TODO }}
           STATUS: ${{ inputs.STATUS }}
           TEST: ${{ inputs.TEST }}
+          FULLLTO: ${{ inputs.BUILD_FULLLTO }}
           BUILD_NAME: ${{ matrix.name }}
           RUN_NUM: -r${{ github.run_number }}
         run: |

@@ -71,6 +71,10 @@ SUSFS_PATCHES="${SUSFS_DIR}/kernel_patches"
 SUSFS_BRANCH="gki-android14-6.1"
 SUSFS_PATCH="gki-android14-6.1"
 
+if [ "$FULLLTO" == "true" ]; then
+  VARIANT+="+fullLTO"
+fi
+
 log "Changelog of repos"
 gh api "repos/ahmed-alnassif/android_kernel_common-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/android_kernel-6.1_changelog.txt"

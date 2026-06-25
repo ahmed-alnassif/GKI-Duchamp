@@ -111,3 +111,10 @@ CONFIG_PAGE_OWNER=n
 CONFIG_RCU_TRACE=n
 EOF
 fi
+
+if [ "$FULLLTO" == "true" ]; then
+  echo "⚙️ FullLTO optimization enabled"
+  cat >> $DEFCONFIG <<EOF
+CONFIG_LTO_CLANG_FULL=y
+EOF
+fi
