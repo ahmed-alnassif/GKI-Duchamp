@@ -147,6 +147,16 @@ jobs:
             exit $ret
           fi
 
+      - name: Maximize build space + add swap
+        uses: easimon/maximize-build-space@v1
+        with:
+          swap-size-mb: 32768
+          root-reserve-mb: 1024
+          remove-dotnet: true
+          remove-android: true
+          remove-haskell: true
+          remove-codeql: true
+
       - name: Install Dependencies
         run: |
           sudo apt-get update
