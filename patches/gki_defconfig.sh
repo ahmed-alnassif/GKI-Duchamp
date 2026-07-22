@@ -205,6 +205,9 @@ CONFIG_IP6_NF_TARGET_HL=y
 CONFIG_IP6_NF_MATCH_HL=y
 # BBG (baseband-guard)
 CONFIG_BBG=y
+# Compiler optimization
+CONFIG_LTO_NONE=n
+CONFIG_LTO_CLANG_THIN=y
 EOF
 if [ "$KSU_COMPAT" != "true" ]; then
   echo "🔧 Disable useless debugging configs for performance and resources"
