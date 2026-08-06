@@ -1,4 +1,4 @@
-name: GKI-Duchamp Builder
+name: GKID Builder
 
 on:
   workflow_call:
