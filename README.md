@@ -27,7 +27,7 @@ A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Du
     - Optimized **zRAM** with LZ4 compression + writeback + tracking for more and faster usable RAM under heavy loads
     - CPU governors: **schedutil + ondemand** for efficient yet responsive scaling
     - **mq-deadline I/O scheduler** tuned for low latency on UFS 4.0 storage
-    - Network stack with **TCP BBRv3** + **TCP Westwood+** + **FQ** + **ECN** + **IPv6 HL support** + **TCP_NODELAY forced** for reduced latency and faster WiFi/mobile data speeds
+    - Network stack with **TCP BBRv3** + **TCP Westwood+** + **FQ** + **ECN** + **IPv6 HL support** for reduced latency and faster WiFi/mobile data speeds
     - **F2FS** filesystem tuning (reduced GC sleep to 50ms, enlarged fsync blocks, reduced congestion timeout)
     - **ext4** commit age extended to 30s for fewer disk writes
     - **IP Set** full support + **IPv6 NAT** for better tethering and VPN performance
