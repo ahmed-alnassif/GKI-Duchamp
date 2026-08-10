@@ -83,8 +83,8 @@ gh api "repos/ahmed-alnassif/GKI-Duchamp-6.1/commits?sha=${KERNEL_BRANCH}&per_pa
 > "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
 gh api 'repos/tiann/KernelSU/commits?sha=main&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/ksu_changelog.txt"
-gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
-> "$RELEASE_DIR/sukisu_changelog.txt"
+#gh api 'repos/SukiSU-Ultra/SukiSU-Ultra/commits?sha=builtin&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+#> "$RELEASE_DIR/sukisu_changelog.txt"
 gh api 'repos/KernelSU-Next/KernelSU-Next/commits?sha=dev&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/ksun_changelog.txt"
 

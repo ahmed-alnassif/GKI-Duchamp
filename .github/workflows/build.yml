@@ -66,13 +66,8 @@ on:
         type: boolean
         default: true
 
-      BUILD_SKSU:
-        description: "Build with SukiSU-Ultra"
-        type: boolean
-        default: true
-
       BUILD_KSU_SUSFS:
-        description: "Build with KernelSU and its forks (SukiSU Ultra, KernelSU Next) + SUSFS"
+        description: "Build with KernelSU and its forks (KernelSU Next) + SUSFS"
         type: boolean
         default: true
 
@@ -119,16 +114,11 @@ jobs:
             ENTRIES="${ENTRIES}{\"name\":\"KSUN\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
           fi
 
-          if [[ "${{ github.event.inputs.BUILD_SKSU }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"SKSU\",\"KSU\":\"SKSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
-          fi
-
           if [[ "${{ github.event.inputs.BUILD_KSU_SUSFS }}" == "true" ]]; then
             ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"KSUN+SUSFS\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"Compat+KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_COMPAT\":\"true\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"Compat+KSUN+SUSFS\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"true\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"SKSU+SUSFS\",\"KSU\":\"SKSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
             ENTRIES="${ENTRIES}{\"name\":\"RSKSU+SUSFS\",\"KSU\":\"RSKSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
           fi
 
@@ -510,17 +500,6 @@ jobs:
             fi
             echo ""
             echo "**Full Commit History:** [Browse all commits](https://github.com/KernelSU-Next/KernelSU-Next/commits/dev)"
-            echo ""
-            echo "---"
-            echo "**SukiSU Ultra Changelog (last 10 commits):**"
-            echo ""
-            if [ -f release-artifacts/sukisu_changelog.txt ]; then
-              cat release-artifacts/sukisu_changelog.txt
-            else
-              echo "*No changelog available*"
-            fi
-            echo ""
-            echo "**Full Commit History:** [Browse all commits](https://github.com/SukiSU-Ultra/SukiSU-Ultra/commits/builtin)"
             echo ""
             echo "---"
             echo "**Checksums:**"

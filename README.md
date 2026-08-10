@@ -9,7 +9,6 @@
 [![Downloads](https://img.shields.io/github/downloads/ahmed-alnassif/GKI-Duchamp/total?label=Downloads&color=00aa00)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
 [![GitHub License](https://img.shields.io/github/license/ahmed-alnassif/GKI-Duchamp?logo=gnu)](/LICENSE)
 [![KernelSU](https://img.shields.io/badge/KernelSU-built--in-success)](https://github.com/tiann/KernelSU)
-[![SukiSU Ultra](https://img.shields.io/badge/SukiSU--Ultra-built--in-success)](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
 ![ReSukiSU](https://img.shields.io/badge/ReSukiSU-built--in-success)
 [![KernelSU Next](https://img.shields.io/badge/KernelSU--Next-built--in-success)](https://github.com/KernelSU-Next/KernelSU-Next)
 [![Managers](https://img.shields.io/badge/Managers-multiple-success)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
@@ -56,7 +55,7 @@ A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Du
 *   **🐳 DroidSpaces:** Full kernel support enabled for [DroidSpaces](https://github.com/ravindu644/Droidspaces-OSS) a lightweight container runtime that lets you run real Linux distributions (Ubuntu, Debian, etc.) with proper isolation and init systems (systemd/OpenRC) directly on your Android device.
 
 *   **🔧 Multiple Variants:** Choose the configuration that fits your needs:
-    - **Root solutions:** KernelSU, KernelSU Next, SukiSU Ultra, ReSukiSU, or Vanilla (no root)
+    - **Root solutions:** KernelSU, KernelSU Next, ReSukiSU, or Vanilla (no root)
     - **Manager flexibility:** Multiple-Manager variants let you use your preferred manager app
     - **LTO options:** thinLTO builds + dedicated `+NoLTO` / `Compat+NoLTO` variants
 
