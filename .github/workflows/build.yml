@@ -417,7 +417,6 @@ jobs:
 
             **🌐 Network**
             - **TCP BBRv3 + Westwood+** → better WiFi/mobile data speeds
-            - **TCP_NODELAY forced** → reduced latency
             - **IPv6 NAT + IP Set** → better tethering & VPN
 
             **🔋 Battery Life**
