@@ -44,7 +44,7 @@ on:
 
       LTO:
         description: enable LTO optimization
-        default: "thinLTO"
+        default: "fullLTO"
         type: choice
         options:
           - "noneLTO"
@@ -74,15 +74,20 @@ on:
       CLEAN_LTO_CACHE:
         description: "Clean ThinLTO cache to fix .config bug"
         type: boolean
-        default: false
+        default: true
 
       DROIDSPACES:
         description: "Enable droidspaces-oss support"
         type: boolean
-        default: false
+        default: true
 
       NH:
         description: "Enable NetHunter support"
+        type: boolean
+        default: true
+
+      NM:
+        description: "Enable NoMount support"
         type: boolean
         default: true
 
@@ -192,6 +197,7 @@ jobs:
           CLEAN_LTO_CACHE: ${{ inputs.CLEAN_LTO_CACHE }}
           DROIDSPACES: ${{ inputs.DROIDSPACES }}
           NH: ${{ inputs.NH }}
+          NM: ${{ inputs.NM }}
           BUILD_NAME: ${{ matrix.name }}
           RUN_NUM: -r${{ github.run_number }}
         run: |
@@ -365,16 +371,12 @@ jobs:
               echo ">This is an empty testing release — please do not download or install!"
               echo ""
             fi
-            if [ "${{ inputs.DroidSpaces }}" = "true" ]; then
-              DROIDSPACES_STATUS="Enabled"
-            else
-              DROIDSPACES_STATUS="Disabled"
-            fi
-            if [ "${{ inputs.NH }}" = "true" ]; then
-              NH_STATUS="Enabled"
-            else
-              NH_STATUS="Disabled"
-            fi
+
+            declare -A STATUS_MAP=(["true"]="Enabled" ["false"]="Disabled")
+
+            DROIDSPACES_STATUS="${STATUS_MAP[${{ inputs.DroidSpaces }}]}"
+            NH_STATUS="${STATUS_MAP[${{ inputs.NH }}]}"
+            NM_STATUS="${STATUS_MAP[${{ inputs.NM }}]}"
             cat << EOF
             ### ✨ ${{ env.RELEASE_NAME }} ✨
 
@@ -383,12 +385,13 @@ jobs:
             - 🔥 **LTO optimizations:** ${{ inputs.LTO }}
             - 🐉 **Kali NetHunter:** $NH_STATUS
             - 🐳 **DroidSpaces:** $DROIDSPACES_STATUS
+            - 🛡️ **SuSFS:** ඞ ${{ env.SUSFS_VERSION }}
+            - 🥷 **NoMount:** $NM_STATUS
             - 🔖 **Version:** ${{ env.LINUX_VERSION }} (android14-6.1-lts)
             - 📦 **Variants:**
             $(echo "$VARIANTS" | grep -i GKID | sed 's/^/  - /')
             - 🐉 **Kali NetHunter KernelSU modules:** $([ "${{ inputs.NH }}" = "true" ] || echo None)
             $(echo "$VARIANTS" |  grep -i WirelessKSU | sed 's/^/  - /')
-            - 🛡️ **SuSFS:** ඞ ${{ env.SUSFS_VERSION }}
             - ⚙️ **Compiler:** ${{ env.COMPILER_STRING }}
 
             >[!Important]

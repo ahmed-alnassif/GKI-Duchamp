@@ -263,6 +263,14 @@ fi
 
 echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 
+if [ "$NM" = "true" ]; then
+  log "Applying NoMount"
+  NM_DIR="$WORKDIR/nomount"
+  git clone --depth=1 "https://github.com/maxsteeel/nomount.git" -b dev $NM_DIR
+  cp -R $NM_DIR/kernel/src/* ./fs/
+  patch -p1 --fuzz=3 < "$NM_DIR/kernel/patches/nomount_6.1_kernel_integration.patch"
+fi
+
 # Replace Placeholder in zip name
 AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
 AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
@@ -371,7 +379,7 @@ make ${MAKE_ARGS[@]} CC="ccache clang" CXX="ccache clang++"
 $KMI_CHECK "$KSRC/android/abi_gki_aarch64.stg" "$MODULE_SYMVERS" || true
 
 
-# Return to the initial working directory (Post-compiling steps))
+# Return to the initial working directory
 cd $WORKDIR
 
 # Clone AnyKernel
