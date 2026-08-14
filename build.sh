@@ -265,10 +265,7 @@ echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 
 if [ "$NM" = "true" ]; then
   log "Applying NoMount"
-  NM_DIR="$WORKDIR/nomount"
-  git clone --depth=1 "https://github.com/maxsteeel/nomount.git" -b dev $NM_DIR
-  cp -R $NM_DIR/kernel/src/* ./fs/
-  patch -p1 --fuzz=3 < "$NM_DIR/kernel/patches/nomount_6.1_kernel_integration.patch"
+  curl "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/dev/kernel/setup.sh" | bash -s dev
 fi
 
 # Replace Placeholder in zip name
