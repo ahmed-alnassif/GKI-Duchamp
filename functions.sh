@@ -47,13 +47,32 @@ log() {
 }
 
 error() {
-  local err_txt
-  err_txt=$(
-    cat << EOF
-*Kernel CI*
-ERROR: $*
-EOF
-  )
   echo -e "[ERROR] $*"
   exit 1
 }
+
+retry() {
+    local max_attempts=5
+    local delay=2
+    local attempt=1
+
+    while [ $attempt -le $max_attempts ]; do
+        if "$@"; then
+            return 0
+        fi
+
+        echo "Command failed (attempt $attempt/$max_attempts): $*"
+        echo "Retrying in ${delay}s..."
+        sleep $delay
+        delay=$((delay + 1))
+        attempt=$((attempt + 1))
+    done
+
+    echo "Error: Command failed after $max_attempts attempts: $*" >&2
+    return 1
+}
+
+curl() { retry command curl "$@"; }
+git() { retry command git "$@"; }  
+wget() { retry command wget "$@"; }
+export -f retry curl git wget
