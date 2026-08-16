@@ -119,7 +119,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 1
 
@@ -130,7 +130,7 @@ jobs:
           pip install lxml
 
       - name: Cache ccache + LTO
-        uses: actions/cache@v6
+        uses: actions/cache@v6.1.0
         id: ccache-cache
         with:
           path: |
@@ -221,7 +221,7 @@ jobs:
 
       - name: Upload environment file
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: build-env-${{ matrix.name }}-${{ github.run_number }}
           path: build-env-${{ matrix.name }}.txt
@@ -229,7 +229,7 @@ jobs:
 
       - name: Upload build artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: build-${{ matrix.name }}-${{ github.run_number }}
           path: artifacts/
@@ -247,7 +247,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload combined artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: all-builds-${{ github.run_number }}
           retention-days: 7
@@ -261,7 +261,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 1
 
@@ -466,7 +466,7 @@ jobs:
             } > release_body.md
 
       - name: Upload All Builds to release repo
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3.0.2
         with:
           repository: ${{ env.RELEASE_REPO }}
           name: ${{ env.RELEASE_NAME }}
