@@ -157,17 +157,9 @@ if [ "$KSU" = "SKSU" ]; then
   fi
 
   if susfs_included; then
-    log "SUSFS included"
-    git clone --depth=1 -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
 
-    cp -R $SUSFS_PATCHES/fs/* ./fs
-    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
-
-    cd $SUSFS_DIR
-    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/susfs_fs_namespace_fix.patch"
-    cd $OLDPWD
-
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch
+    clone_susfs
+    apply_susfs_patches
 
     SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
     echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
@@ -180,17 +172,8 @@ if susfs_included && [ "$KSU" = "RSKSU" ]; then
   log "ReSukiSU included"
   install_ksu "ReSukiSU/ReSukiSU" "main"
 
-  log "SUSFS included"
-  git clone --depth=1 -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
-
-  cp -R $SUSFS_PATCHES/fs/* ./fs
-  cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
-
-    cd $SUSFS_DIR
-    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/susfs_fs_namespace_fix.patch"
-    cd $OLDPWD
-
-  patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch
+  clone_susfs
+  apply_susfs_patches
 
   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
@@ -206,8 +189,7 @@ if [ "$KSU" = "KSU" ]; then
   if susfs_included; then
     VARIANT+="+Multiple-Managers"
     git clone "https://github.com/tiann/KernelSU" && echo "[+] Repository cloned."
-    log "SUSFS included"
-    git clone --depth=1 -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
+    clone_susfs
 
     cd KernelSU
     #git reset --hard "61c6313"
@@ -226,14 +208,7 @@ if [ "$KSU" = "KSU" ]; then
     cd ..
     bash "KernelSU/kernel/setup.sh" "main"
 
-    cp -R $SUSFS_PATCHES/fs/* ./fs
-    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
-
-    cd $SUSFS_DIR
-    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/susfs_fs_namespace_fix.patch"
-    cd $OLDPWD
-
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch
+    apply_susfs_patches
 
     SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
     echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
@@ -251,17 +226,9 @@ if [ "$KSU" = "KSUN" ]; then
   fi
 
   if susfs_included; then
-    log "SUSFS included"
-    git clone --depth=1 -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
 
-    cp -R $SUSFS_PATCHES/fs/* ./fs
-    cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
-
-    cd $SUSFS_DIR
-    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/susfs_fs_namespace_fix.patch"
-    cd $OLDPWD
-
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch
+    clone_susfs
+    apply_susfs_patches
 
     SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
     echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
