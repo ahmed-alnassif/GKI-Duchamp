@@ -32,6 +32,7 @@ AK3_ZIP_NAME="$KERNEL_NAME-VARIANT-REL-KVER.zip"
 OUTDIR="$WORKDIR/out"
 KSRC="$WORKDIR/ksrc"
 KERNEL_PATCHES="$WORKDIR/kernel-patches"
+PATCHES_DIR="$WORKDIR/patches"
 
 # Import functions
 source $WORKDIR/functions.sh
@@ -97,7 +98,7 @@ cd "$WORKDIR/neutron-clang"
 retry bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S &> /dev/null
 cd $OLDPWD
 if [ ! -d "$CLANG_BIN" ]; then
-    echo "Error: Clang not found in ${CLANG_BIN}."
+    error "Clang not found in ${CLANG_BIN}."
     exit 1
 fi
 
@@ -161,9 +162,6 @@ if [ "$KSU" = "SKSU" ]; then
     clone_susfs
     apply_susfs_patches
 
-    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
-    echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
-
   fi
 
 fi
@@ -174,9 +172,6 @@ if susfs_included && [ "$KSU" = "RSKSU" ]; then
 
   clone_susfs
   apply_susfs_patches
-
-  SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
-  echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
 fi
 
@@ -194,12 +189,12 @@ if [ "$KSU" = "KSU" ]; then
     cd KernelSU
     #git reset --hard "61c6313"
     git reset --soft HEAD~1
-    patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-avc-log-spoofing.patch"
-    patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-add-multiple-managers.patch"
-    patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-throne_tracker-offload-to-kthread.patch"
+    patch -p1 --fuzz=3 < "$PATCHES_DIR/0001-feat-avc-log-spoofing.patch"
+    patch -p1 --fuzz=3 < "$PATCHES_DIR/0001-feat-add-multiple-managers.patch"
+    patch -p1 --fuzz=3 < "$PATCHES_DIR/0001-feat-throne_tracker-offload-to-kthread.patch"
     patch -p1 --fuzz=3 < "$SUSFS_PATCHES/KernelSU/10_enable_susfs_for_ksu.patch"
-    patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-escape-persistent_allow_list-to-kthread.patch"
-    patch -p1 --fuzz=3 < "$WORKDIR/patches/0001-feat-supercalls-allow-userspace-to-pull-list-entries.patch"
+    patch -p1 --fuzz=3 < "$PATCHES_DIR/0001-feat-escape-persistent_allow_list-to-kthread.patch"
+    patch -p1 --fuzz=3 < "$PATCHES_DIR/0001-feat-supercalls-allow-userspace-to-pull-list-entries.patch"
     sed -i "/    git pull && echo \"\[+\] Repository updated.\"/d" "kernel/setup.sh"
     git config --global user.email "mr.ahmed.nassif@gmail.com"
     git config --global user.name "Ahmed Al-Nassif"
@@ -209,9 +204,6 @@ if [ "$KSU" = "KSU" ]; then
     bash "KernelSU/kernel/setup.sh" "main"
 
     apply_susfs_patches
-
-    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
-    echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
   fi
 
@@ -229,9 +221,6 @@ if [ "$KSU" = "KSUN" ]; then
 
     clone_susfs
     apply_susfs_patches
-
-    SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
-    echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
 
   fi
 
