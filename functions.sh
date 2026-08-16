@@ -75,4 +75,5 @@ retry() {
 curl() { retry command curl "$@"; }
 git() { retry command git "$@"; }  
 wget() { retry command wget "$@"; }
-export -f retry curl git wget
+bash() { retry command bash "$@"; }
+export -f retry curl git wget bash

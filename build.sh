@@ -28,7 +28,7 @@ RELEASE="$(date +v%y.%m.%d)${RUN_NUM}"
 mkdir -p $RELEASE_DIR
 
 GKI_RELEASES_REPO="https://github.com/ahmed-alnassif/GKI-Duchamp"
-AK3_ZIP_NAME="$KERNEL_NAME-REL-KVER-VARIANT-BUILD_DATE.zip"
+AK3_ZIP_NAME="$KERNEL_NAME-VARIANT-REL-KVER.zip"
 OUTDIR="$WORKDIR/out"
 KSRC="$WORKDIR/ksrc"
 KERNEL_PATCHES="$WORKDIR/kernel-patches"
@@ -94,7 +94,7 @@ log "Downloading Clang..."
 CLANG_BIN="$WORKDIR/neutron-clang/bin"
 mkdir -p "$WORKDIR/neutron-clang"
 cd "$WORKDIR/neutron-clang"
-bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S &> /dev/null
+retry bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S &> /dev/null
 cd $OLDPWD
 if [ ! -d "$CLANG_BIN" ]; then
     echo "Error: Clang not found in ${CLANG_BIN}."
