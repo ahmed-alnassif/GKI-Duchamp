@@ -1,21 +1,6 @@
 name: GKI-Duchamp Builder
 
 on:
-  workflow_call:
-    inputs:
-      TODO:
-        type: string
-      KSU:
-        type: string
-      KSU_SUSFS:
-        type: string
-      STATUS:
-        type: string
-      TEST:
-        type: string
-      LTO:
-        type: string
-
   workflow_dispatch:
     inputs:
       TODO:
@@ -25,14 +10,6 @@ on:
         options:
           - "kernel"
           - "defconfig"
-
-      STATUS:
-        description: Run type
-        default: "RELEASE"
-        type: choice
-        options:
-          - "RELEASE"
-          - "BETA"
 
       TEST:
         description: debug the pipeline
@@ -146,27 +123,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Validate Inputs and Secrets
-        env:
-          KSU: ${{ matrix.KSU }}
-          KSU_SUSFS: ${{ matrix.KSU_SUSFS }}
-          KERNEL_REPO: ${{ secrets.KERNEL_REPO }}
-        run: |
-          _error() {
-              echo "❌ ERROR: $*"
-              let ret++
-          }
-
-          ret=0
-
-          if [[ $KSU == "no" && $KSU_SUSFS == "true" ]]; then
-              _error "Cannot use SuSFS without KernelSU"
-          fi
-
-          if [[ $ret -gt 0 ]]; then
-            exit $ret
-          fi
-
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -191,7 +147,6 @@ jobs:
           KSU_COMPAT: ${{ matrix.KSU_COMPAT }}
           KSU_SUSFS: ${{ matrix.KSU_SUSFS }}
           TODO: ${{ inputs.TODO }}
-          STATUS: ${{ inputs.STATUS }}
           TEST: ${{ inputs.TEST }}
           LTO: ${{ inputs.LTO }}
           CLEAN_LTO_CACHE: ${{ inputs.CLEAN_LTO_CACHE }}
@@ -302,7 +257,7 @@ jobs:
 
   release:
     needs: build
-    if: github.event.inputs.TODO != 'defconfig' && github.event.inputs.STATUS == 'RELEASE'
+    if: github.event.inputs.TODO != 'defconfig'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source

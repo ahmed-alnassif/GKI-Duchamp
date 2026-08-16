@@ -258,11 +258,7 @@ source "$WORKDIR/configs/gki_defconfig.sh"
 # set localversion
 if [ "${TODO:-kernel}" = "kernel" ]; then
   LATEST_COMMIT_HASH=$(git rev-parse --short HEAD)
-  if [ "$STATUS" = "BETA" ]; then
-    SUFFIX="$LATEST_COMMIT_HASH"
-  else
-    SUFFIX="${RELEASE}/${LATEST_COMMIT_HASH}"
-  fi
+  SUFFIX="${RELEASE}/${LATEST_COMMIT_HASH}"
   config --set-str CONFIG_LOCALVERSION "-$KERNEL_NAME/$SUFFIX"
   config --disable CONFIG_LOCALVERSION_AUTO
   sed -i 's/echo "+"/# echo "+"/g' scripts/setlocalversion
@@ -316,18 +312,18 @@ make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 if susfs_included; then
 
   log "=== DEBUG: Checking defconfig for SUSFS ==="
-  grep -i susfs ./arch/arm64/configs/gki_defconfig || echo "❌ SUSFS NOT FOUND in defconfig!"
+  grep -i susfs ./arch/arm64/configs/gki_defconfig || echo "[-] SUSFS NOT FOUND in defconfig!"
   echo ""
 
   # DEBUG: Check if SUSFS made it to .config
   log "=== DEBUG: Checking .config for SUSFS ==="
-  grep CONFIG_KSU_SUSFS $OUTDIR/.config || echo "❌ SUSFS NOT ENABLED in .config!"
-  grep CONFIG_KSU_SUSFS_SUS_MAP $OUTDIR/.config || echo "❌ SUSFS_SUS_MAP not enabled!"
+  grep CONFIG_KSU_SUSFS $OUTDIR/.config || echo "[-] SUSFS NOT ENABLED in .config!"
+  grep CONFIG_KSU_SUSFS_SUS_MAP $OUTDIR/.config || echo "[-] SUSFS_SUS_MAP not enabled!"
   echo ""
 
   # If SUSFS is in defconfig but not in .config, check dependencies
   if grep -q "CONFIG_KSU_SUSFS" ./arch/arm64/configs/gki_defconfig && ! grep -q "CONFIG_KSU_SUSFS=y" $OUTDIR/.config; then
-    log "⚠️ SUSFS in defconfig but not in .config - checking dependencies..."
+    log "[!] SUSFS in defconfig but not in .config - checking dependencies..."
     grep "depends on" $(find . -name "Kconfig" -exec grep -l "KSU_SUSFS" {} \;) 2>/dev/null || echo "No dependency info found"
   fi
 
@@ -335,7 +331,7 @@ fi
 
 # Test
 if [ "$TEST" = "yes" ]; then
-  log pipeline test done
+  log "Pipeline test done"
   mkdir -p "$RELEASE_DIR"
   echo "test-${VARIANT}" > "$RELEASE_DIR/test-${VARIANT}.zip"
   exit 0
@@ -355,7 +351,6 @@ make ${MAKE_ARGS[@]} CC="ccache clang" CXX="ccache clang++"
 # Check KMI Function symbol
 $KMI_CHECK "$KSRC/android/abi_gki_aarch64.stg" "$MODULE_SYMVERS" || true
 
-
 # Return to the initial working directory
 cd $WORKDIR
 
@@ -364,43 +359,23 @@ log "Cloning anykernel from $(simplify_gh_url "$ANYKERNEL_REPO")"
 git clone -q --depth=1 $ANYKERNEL_REPO anykernel
 
 # Set kernel string in anykernel
-if [ $STATUS == "BETA" ]; then
-  BUILD_DATE=$(date -d "$KBUILD_BUILD_TIMESTAMP" +"%Y%m%d-%H%M")
-  AK3_ZIP_NAME=${AK3_ZIP_NAME//BUILD_DATE/$BUILD_DATE}
-  AK3_ZIP_NAME=${AK3_ZIP_NAME//-REL/}
-  sed -i \
-    "s/kernel.string=.*/kernel.string=${KERNEL_NAME} ${LINUX_VERSION} (${BUILD_DATE}) ${VARIANT} by Ahmed Al-Nassif (ahmed-alnassif)/g" \
-    $WORKDIR/anykernel/anykernel.sh
-else
-  AK3_ZIP_NAME=${AK3_ZIP_NAME//-BUILD_DATE/}
-  AK3_ZIP_NAME=${AK3_ZIP_NAME//REL/$RELEASE}
-  sed -i \
-    "s/kernel.string=.*/kernel.string=${KERNEL_NAME} ${RELEASE} ${LINUX_VERSION} ${VARIANT} by Ahmed Al-Nassif (ahmed-alnassif)/g" \
-    $WORKDIR/anykernel/anykernel.sh
-fi
+AK3_ZIP_NAME=${AK3_ZIP_NAME//REL/$RELEASE}
+sed -i \
+  "s/kernel.string=.*/kernel.string=${KERNEL_NAME} ${RELEASE} ${LINUX_VERSION} ${VARIANT} by Ahmed Al-Nassif (ahmed-alnassif)/g" \
+  $WORKDIR/anykernel/anykernel.sh
 
 # Zip the anykernel
 cd anykernel
 log "Zipping anykernel..."
 if [ ! -f "$KERNEL_IMAGE" ];then
-  echo "$KERNEL_IMAGE not found."
+  error "$KERNEL_IMAGE not found."
   exit 1
 fi
 cp "$KERNEL_IMAGE" .
 zip -r9 "$WORKDIR/$AK3_ZIP_NAME" ./*
 cd $OLDPWD
 
-if [ "$STATUS" != "BETA" ]; then
-  echo "BASE_NAME=$KERNEL_NAME-$VARIANT" >> $GITHUB_ENV
-  mkdir -p $RELEASE_DIR
-  mv $WORKDIR/*.zip $RELEASE_DIR
-fi
+echo "BASE_NAME=$KERNEL_NAME-$VARIANT" >> $GITHUB_ENV
+mkdir -p $RELEASE_DIR
+mv $WORKDIR/*.zip $RELEASE_DIR
 
-if [ "$STATUS" != "BETA" ]; then
-  (
-    echo "LINUX_VERSION=$LINUX_VERSION"
-    echo "SUSFS_VERSION=$(curl -s "$SUSFS_URL"/raw/gki-android14-6.1/kernel_patches/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g')"
-    echo "KERNEL_NAME=$KERNEL_NAME"
-    echo "RELEASE_REPO=$(simplify_gh_url "$GKI_RELEASES_REPO")"
-  ) >> $RELEASE_DIR/info.txt
-fi
