@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # Constants
 WORKDIR="$(pwd)"
@@ -162,8 +163,11 @@ if [ "$KSU" = "SKSU" ]; then
     cp -R $SUSFS_PATCHES/fs/* ./fs
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
-    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
+    cd $SUSFS_DIR
+    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/susfs_fs_namespace_fix.patch"
+    cd $OLDPWD
+
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch
 
     SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
     echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
@@ -182,8 +186,11 @@ if susfs_included && [ "$KSU" = "RSKSU" ]; then
   cp -R $SUSFS_PATCHES/fs/* ./fs
   cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
-  patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-  patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
+    cd $SUSFS_DIR
+    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/susfs_fs_namespace_fix.patch"
+    cd $OLDPWD
+
+  patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch
 
   SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
   echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
@@ -222,8 +229,11 @@ if [ "$KSU" = "KSU" ]; then
     cp -R $SUSFS_PATCHES/fs/* ./fs
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
-    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
+    cd $SUSFS_DIR
+    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/susfs_fs_namespace_fix.patch"
+    cd $OLDPWD
+
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch
 
     SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
     echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
@@ -247,8 +257,11 @@ if [ "$KSU" = "KSUN" ]; then
     cp -R $SUSFS_PATCHES/fs/* ./fs
     cp -R $SUSFS_PATCHES/include/linux/* ./include/linux/
 
-    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/fs_namespace.patch"
-    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch || echo "Common kernel SUSFS patch failed."
+    cd $SUSFS_DIR
+    patch -p1 --fuzz=3 < "$KERNEL_PATCHES/susfs/susfs_fs_namespace_fix.patch"
+    cd $OLDPWD
+
+    patch -p1 --fuzz=3 < $SUSFS_PATCHES/50_add_susfs_in_${SUSFS_PATCH}.patch
 
     SUSFS_VERSION=$(grep -E '^#define SUSFS_VERSION' ./include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g')
     echo "SUSFS_VERSION=$SUSFS_VERSION" >> $GITHUB_ENV
