@@ -332,12 +332,13 @@ jobs:
             DROIDSPACES_STATUS="${STATUS_MAP[${{ inputs.DroidSpaces }}]}"
             NH_STATUS="${STATUS_MAP[${{ inputs.NH }}]}"
             NM_STATUS="${STATUS_MAP[${{ inputs.NM }}]}"
+            LTO="${{ inputs.LTO }}"
             cat << EOF
             ### ✨ ${{ env.RELEASE_NAME }} ✨
 
             **Build Information:**
             - 🐧 **Kernel:** ${{ env.RELEASE_NAME }}
-            - 🔥 **LTO optimizations:** ${{ inputs.LTO }}
+            - 🔥 **LTO optimizations:** ${LTO^}
             - 🐉 **Kali NetHunter:** $NH_STATUS
             - 🐳 **DroidSpaces:** $DROIDSPACES_STATUS
             - 🛡️ **SuSFS:** ඞ ${{ env.SUSFS_VERSION }}
