@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 # Constants
 WORKDIR="$(pwd)"
@@ -91,11 +90,11 @@ gh api 'repos/KernelSU-Next/KernelSU-Next/commits?sha=dev&per_page=10' --jq '.[]
 > "$RELEASE_DIR/ksun_changelog.txt"
 
 # Download Clang
-log "Downloading Clang..."
+echo "::group::Downloading Clang..."
 CLANG_BIN="$WORKDIR/neutron-clang/bin"
 mkdir -p "$WORKDIR/neutron-clang"
 cd "$WORKDIR/neutron-clang"
-retry bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S &> /dev/null
+bash <(curl -s "https://raw.githubusercontent.com/Neutron-Toolchains/antman/main/antman") -S
 cd $OLDPWD
 if [ ! -d "$CLANG_BIN" ]; then
     error "Clang not found in ${CLANG_BIN}."
@@ -103,6 +102,7 @@ if [ ! -d "$CLANG_BIN" ]; then
 fi
 
 export PATH="${CLANG_BIN}:$PATH"
+echo "::endgroup::"
 
 # ccache configuration
 export CCACHE_DIR="$HOME/.ccache"
@@ -125,6 +125,7 @@ echo "COMPILER_STRING=$COMPILER_STRING" >> $GITHUB_ENV
 
 cd $KSRC
 
+echo "::group::Applied patches"
 log "Applying BBRv3 patch"
 patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
 
@@ -236,6 +237,7 @@ if [ "$NM" = "true" ]; then
   log "Applying NoMount"
   curl "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/dev/kernel/setup.sh" | bash -s dev
 fi
+echo "::endgroup::"
 
 # Replace Placeholder in zip name
 AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
@@ -292,10 +294,10 @@ KERNEL_IMAGE="$OUTDIR/arch/arm64/boot/Image"
 MODULE_SYMVERS="$OUTDIR/Module.symvers"
 KMI_CHECK="$WORKDIR/py/kmi-check-6.x.py"
 
-## Build GKI
-log "Generating config..."
-make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 
+echo "::group::Generating config..."
+make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
+echo "::endgroup::"
 
 # SUSFS debugging
 if susfs_included; then
@@ -333,9 +335,9 @@ if [[ $TODO == "defconfig" ]]; then
   exit 0
 fi
 
-# Build the actual kernel
-log "Building kernel..."
+echo "::group::Building kernel..."
 make ${MAKE_ARGS[@]} CC="ccache clang" CXX="ccache clang++"
+echo "::endgroup::"
 
 # Check KMI Function symbol
 $KMI_CHECK "$KSRC/android/abi_gki_aarch64.stg" "$MODULE_SYMVERS" || true
@@ -367,4 +369,3 @@ cd $OLDPWD
 echo "BASE_NAME=$KERNEL_NAME-$VARIANT" >> $GITHUB_ENV
 mkdir -p $RELEASE_DIR
 mv $WORKDIR/*.zip $RELEASE_DIR
-
