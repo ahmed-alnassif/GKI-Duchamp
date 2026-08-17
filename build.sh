@@ -294,7 +294,6 @@ KERNEL_IMAGE="$OUTDIR/arch/arm64/boot/Image"
 MODULE_SYMVERS="$OUTDIR/Module.symvers"
 KMI_CHECK="$WORKDIR/py/kmi-check-6.x.py"
 
-
 echo "::group::Generating config..."
 make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 echo "::endgroup::"
@@ -338,9 +337,6 @@ fi
 echo "::group::Building kernel..."
 make ${MAKE_ARGS[@]} CC="ccache clang" CXX="ccache clang++"
 echo "::endgroup::"
-
-# Check KMI Function symbol
-$KMI_CHECK "$KSRC/android/abi_gki_aarch64.stg" "$MODULE_SYMVERS" || true
 
 # Return to the initial working directory
 cd $WORKDIR

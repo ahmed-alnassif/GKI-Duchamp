@@ -186,8 +186,8 @@ jobs:
                     ls -la $WKSU/lkm/
                     mkdir -p artifacts
                     cd $WKSU
-                    zip -9 -r "$RPWD/artifacts/$NAME-${{ env.RELEASE }}-${{ env.VARIANT }}.zip" .
-                    echo "$NAME-${{ env.RELEASE }}-${{ env.VARIANT }}.zip created"
+                    zip -9 -r "$RPWD/artifacts/$NAME-${{ env.VARIANT }}-${{ env.RELEASE }}.zip" .
+                    echo "$NAME-${{ env.VARIANT }}-${{ env.RELEASE }}.zip created"
             else
                     echo "No .ko files found (driver may be built-in)"
             fi
