@@ -80,35 +80,7 @@ jobs:
     steps:
       - id: set-matrix
         run: |
-          # Build JSON array manually
-          ENTRIES=""
-
-          if [[ "${{ github.event.inputs.BUILD_VANILLA }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"Vanilla\",\"KSU\":\"no\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"Vanilla+NoLTO\",\"KSU\":\"vnlto\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
-          fi
-
-          if [[ "${{ github.event.inputs.BUILD_KSU }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSU\",\"KSU\":\"KSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
-          fi
-
-          if [[ "${{ github.event.inputs.BUILD_KSUN }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSUN\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"false\"},"
-          fi
-
-          if [[ "${{ github.event.inputs.BUILD_KSU_SUSFS }}" == "true" ]]; then
-            ENTRIES="${ENTRIES}{\"name\":\"KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"KSUN+SUSFS\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"Compat+KSU+SUSFS\",\"KSU\":\"KSU\",\"KSU_COMPAT\":\"true\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"Compat+KSUN+SUSFS\",\"KSU\":\"KSUN\",\"KSU_COMPAT\":\"true\",\"KSU_SUSFS\":\"true\"},"
-            ENTRIES="${ENTRIES}{\"name\":\"RSKSU+SUSFS\",\"KSU\":\"RSKSU\",\"KSU_COMPAT\":\"false\",\"KSU_SUSFS\":\"true\"},"
-          fi
-
-          # Remove trailing comma and wrap in array
-          ENTRIES="[${ENTRIES%,}]"
-
-          # Output matrix
-          echo "matrix={\"include\":${ENTRIES}}" >> $GITHUB_OUTPUT
+          python3 py/generate-matrix.py >> "$GITHUB_OUTPUT"
 
   build:
     needs: prepare
