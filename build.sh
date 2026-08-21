@@ -228,7 +228,11 @@ if [ "$KSU" = "KSUN" ]; then
 fi
 
 if [ "$KSU_COMPAT" = "true" ]; then
-  VARIANT="Compat+NoLTO+${VARIANT}"
+  if [ "$C_LTO" = "true" ]; then
+    VARIANT="Compat+${VARIANT}"
+  else
+    VARIANT="Compat+NoLTO+${VARIANT}"
+  fi
 fi
 
 echo "VARIANT=$VARIANT" >> $GITHUB_ENV

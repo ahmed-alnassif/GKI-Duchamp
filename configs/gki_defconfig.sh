@@ -27,8 +27,10 @@ apply_config "$WORKDIR/configs/compat.config" "$DEFCONFIG"
 echo "⚙️ Adding Universal Performance Tuning"
 apply_config "$WORKDIR/configs/custom.config" "$DEFCONFIG"
 
-if [ "$KSU_COMPAT" = "true" ] || [ "$KSU" = "vnlto" ]; then
-  LTO="noneLTO"
+if [ "$C_LTO" != "true" ]; then
+  if [ "$KSU_COMPAT" = "true" ] || [ "$KSU" = "vnlto" ]; then
+    LTO="noneLTO"
+  fi
 fi
 
 case "$LTO" in
