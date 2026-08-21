@@ -77,8 +77,20 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+
     steps:
-      - id: set-matrix
+      - name: Checkout source
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 1
+
+      - name: Generate build matrix
+        id: set-matrix
+        env:
+          BUILD_VANILLA: ${{ github.event.inputs.BUILD_VANILLA }}
+          BUILD_KSU: ${{ github.event.inputs.BUILD_KSU }}
+          BUILD_KSUN: ${{ github.event.inputs.BUILD_KSUN }}
+          BUILD_KSU_SUSFS: ${{ github.event.inputs.BUILD_KSU_SUSFS }}
         run: |
           python3 py/generate-matrix.py >> "$GITHUB_OUTPUT"
 
