@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# Constants
 WORKDIR="$(pwd)"
 RELEASE_DIR="$WORKDIR/artifacts"
 
@@ -18,8 +17,6 @@ else
   KERNEL_BRANCH="GKID-6.1"
 fi
 
-
-# Set timezone
 sudo timedatectl set-timezone "$TIMEZONE" || export TZ="$TIMEZONE"
 
 RELEASE="$(date +v%y.%m.%d)${RUN_NUM}"
@@ -33,7 +30,6 @@ KSRC="$WORKDIR/ksrc"
 KERNEL_PATCHES="$WORKDIR/kernel-patches"
 PATCHES_DIR="$WORKDIR/patches"
 
-# Import functions
 source $WORKDIR/functions.sh
 
 echo "RELEASE_REPO=$(simplify_gh_url "$GKI_RELEASES_REPO")" >> $GITHUB_ENV
@@ -41,16 +37,14 @@ echo "KERNEL_NAME=${KERNEL_NAME}${RUN_NUM}" >> $GITHUB_ENV
 echo "RELEASE_NAME=$KERNEL_NAME $RELEASE" >> $GITHUB_ENV
 echo "RELEASE=$RELEASE" >> $GITHUB_ENV
 
-# Logging
 BUILD_LOGS="$RELEASE_DIR/build.log"
 exec > >(tee -a "$BUILD_LOGS") 2>&1
 
-trap 'echo "=== SCRIPT EXIT at $(date) ===" >> "$BUILD_LOGS"' EXIT
-trap 'echo "!!! ERROR at line $LINENO: [[$BASH_COMMAND]]" >> "$BUILD_LOGS"' ERR
-trap 'echo "!!! Received SIGTERM at $(date) - possible GitHub kill" >> "$BUILD_LOGS"' TERM
-trap 'echo "!!! Received SIGINT at $(date)" >> "$BUILD_LOGS"' INT
+trap 'echo "SCRIPT EXIT at $(date)" >> "$BUILD_LOGS"' EXIT
+trap 'echo "[-] ERROR at line $LINENO: [[$BASH_COMMAND]]" >> "$BUILD_LOGS"' ERR
+trap 'echo "[-] Received SIGTERM at $(date) - possible GitHub kill" >> "$BUILD_LOGS"' TERM
+trap 'echo "[-] Received SIGINT at $(date)" >> "$BUILD_LOGS"' INT
 
-# Clone kernel source
 log "Cloning kernel source from $(simplify_gh_url "$KERNEL_REPO")"
 git clone -q --depth=1 --recurse-submodules "$KERNEL_REPO" -b "$KERNEL_BRANCH" "$KSRC"
 
@@ -61,8 +55,7 @@ DEFCONFIG_FILE=$(find ./arch/arm64/configs -name "$KERNEL_DEFCONFIG")
 echo "LINUX_VERSION=$LINUX_VERSION" >> $GITHUB_ENV
 cd $WORKDIR
 
-# Set Kernel variant
-log "Setting Kernel variant..."
+log "Setting Kernel variant"
 case "$KSU" in
   "SKSU") VARIANT="SukiSU-Ultra" ;;
   "RSKSU") VARIANT="ReSukiSU" ;;
@@ -72,6 +65,7 @@ case "$KSU" in
   "vnlto") VARIANT="Vanilla+NoLTO" ;;
   *) VARIANT="Vanilla" ;;
 esac
+
 susfs_included && VARIANT+="+SuSFS"
 SUSFS_URL="https://gitlab.com/simonpunk/susfs4ksu"
 SUSFS_DIR="$WORKDIR/susfs"
@@ -89,8 +83,7 @@ gh api 'repos/tiann/KernelSU/commits?sha=main&per_page=10' --jq '.[] | "- [" + .
 gh api 'repos/KernelSU-Next/KernelSU-Next/commits?sha=dev&per_page=10' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/ksun_changelog.txt"
 
-# Download Clang
-echo "::group::Downloading Clang..."
+echo "::group::[*] Downloading Clang"
 CLANG_BIN="$WORKDIR/neutron-clang/bin"
 mkdir -p "$WORKDIR/neutron-clang"
 cd "$WORKDIR/neutron-clang"
@@ -104,7 +97,6 @@ fi
 export PATH="${CLANG_BIN}:$PATH"
 echo "::endgroup::"
 
-# ccache configuration
 export CCACHE_DIR="$HOME/.ccache"
 export CCACHE_BASEDIR="$WORKDIR"
 export CCACHE_NOHARDLINK=true
@@ -119,20 +111,19 @@ ccache --set-config=hash_dir=false
 ccache --set-config=base_dir="$WORKDIR"
 ccache --set-config=compiler_check=content
 
-# Extract clang version
 COMPILER_STRING=$(clang -v 2>&1 | head -n 1 | sed 's/(https..*//' | sed 's/ version//')
 echo "COMPILER_STRING=$COMPILER_STRING" >> $GITHUB_ENV
 
 cd $KSRC
 
-echo "::group::Applied patches"
+echo "::group::[+] Applied patches"
 log "Applying BBRv3 patch"
 patch -p1 --fuzz=3 < $KERNEL_PATCHES/bbrv3/bbrv3.patch
 
 log "Applying NTSync patches..."
 curl -LSs "https://github.com/WildKernels/kernel_patches/raw/main/common/ntsync/ntsync_base.patch" | patch -p1 --fuzz=3
 curl -LSs "https://github.com/WildKernels/kernel_patches/raw/main/common/ntsync/ntsync_compat_android14-6.1.patch" | patch -p1 --fuzz=3
-log "NTSync patches applied"
+success "NTSync patches applied"
 
 log "BBG included"
 wget -qO- "https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh" | bash
@@ -140,7 +131,7 @@ sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/se
 
 if [ "$KSU" = "no" ] || [ "$KSU" = "vnlto" ]; then
   export DROIDSPACES="false"
-  log "DroidSpaces doesn't supported in vanilla builds"
+  warning "DroidSpaces doesn't supported in vanilla builds"
   VARIANT+="+NoDS"
 fi
 
@@ -243,14 +234,12 @@ if [ "$NM" = "true" ]; then
 fi
 echo "::endgroup::"
 
-# Replace Placeholder in zip name
 AK3_ZIP_NAME=${AK3_ZIP_NAME//KVER/$LINUX_VERSION}
 AK3_ZIP_NAME=${AK3_ZIP_NAME//VARIANT/$VARIANT}
 
-log "Patching custom configs..."
+log "Applying configs..."
 source "$WORKDIR/configs/gki_defconfig.sh"
 
-# set localversion
 if [ "${TODO:-kernel}" = "kernel" ]; then
   LATEST_COMMIT_HASH=$(git rev-parse --short HEAD)
   SUFFIX="${RELEASE}/${LATEST_COMMIT_HASH}"
@@ -259,7 +248,6 @@ if [ "${TODO:-kernel}" = "kernel" ]; then
   sed -i 's/echo "+"/# echo "+"/g' scripts/setlocalversion
 fi
 
-# Declare needed variables
 export KBUILD_BUILD_USER="$USER"
 export KBUILD_BUILD_HOST="$HOST"
 export KBUILD_BUILD_TIMESTAMP=$(git -C $KSRC log -1 --format=%cd --date=format-local:'%a %b %d %T %z %Y')
@@ -277,9 +265,9 @@ MAKE_ARGS=(
   O="$OUTDIR"
 )
 
-if [ "$CLEAN_LTO_CACHE" = "true" ]; then
+if [ "${LTO:-}" = "thinLTO" ] && [ "$CLEAN_LTO_CACHE" = "true" ]; then
   rm -rf "$LINK_CACHE_PATH"
-  log "ThinLTO cache removed"
+  success "ThinLTO cache removed"
 fi
 
 if [ "${LTO:-}" = "thinLTO" ]; then
@@ -298,66 +286,58 @@ KERNEL_IMAGE="$OUTDIR/arch/arm64/boot/Image"
 MODULE_SYMVERS="$OUTDIR/Module.symvers"
 KMI_CHECK="$WORKDIR/py/kmi-check-6.x.py"
 
-echo "::group::Generating config..."
+echo "::group::[*] Generating config"
 make ${MAKE_ARGS[@]} "$KERNEL_DEFCONFIG"
 echo "::endgroup::"
 
-# SUSFS debugging
 if susfs_included; then
 
-  log "=== DEBUG: Checking defconfig for SUSFS ==="
-  grep -i susfs ./arch/arm64/configs/gki_defconfig || echo "[-] SUSFS NOT FOUND in defconfig!"
+  log "DEBUG: Checking defconfig for SUSFS"
+  grep -i susfs ./arch/arm64/configs/gki_defconfig || error "SUSFS NOT FOUND in defconfig!"
   echo ""
 
-  # DEBUG: Check if SUSFS made it to .config
-  log "=== DEBUG: Checking .config for SUSFS ==="
-  grep CONFIG_KSU_SUSFS $OUTDIR/.config || echo "[-] SUSFS NOT ENABLED in .config!"
-  grep CONFIG_KSU_SUSFS_SUS_MAP $OUTDIR/.config || echo "[-] SUSFS_SUS_MAP not enabled!"
+  log "DEBUG: Checking .config for SUSFS"
+  grep CONFIG_KSU_SUSFS $OUTDIR/.config || error "SUSFS NOT ENABLED in .config!"
+  grep CONFIG_KSU_SUSFS_SUS_MAP $OUTDIR/.config || error "SUSFS_SUS_MAP not enabled!"
   echo ""
 
-  # If SUSFS is in defconfig but not in .config, check dependencies
   if grep -q "CONFIG_KSU_SUSFS" ./arch/arm64/configs/gki_defconfig && ! grep -q "CONFIG_KSU_SUSFS=y" $OUTDIR/.config; then
-    log "[!] SUSFS in defconfig but not in .config - checking dependencies..."
-    grep "depends on" $(find . -name "Kconfig" -exec grep -l "KSU_SUSFS" {} \;) 2>/dev/null || echo "No dependency info found"
+    warning "SUSFS in defconfig but not in .config - checking dependencies..."
+    grep "depends on" $(find . -name "Kconfig" -exec grep -l "KSU_SUSFS" {} \;) 2>/dev/null || error "No dependency info found"
   fi
 
 fi
 
-# Test
 if [ "$TEST" = "yes" ]; then
-  log "Pipeline test done"
+  success "Pipeline test done"
   mkdir -p "$RELEASE_DIR"
   echo "test-${VARIANT}" > "$RELEASE_DIR/test-${VARIANT}.zip"
   exit 0
 fi
 
 if [[ $TODO == "defconfig" ]]; then
-  log "Copying defconfig..."
+  log "Copying defconfig"
   mkdir -p "$RELEASE_DIR"
   cp "$OUTDIR/.config" "$RELEASE_DIR/config-${VARIANT}.txt"
   exit 0
 fi
 
-echo "::group::Building kernel..."
+echo "::group::[*] Building kernel"
 make ${MAKE_ARGS[@]} CC="ccache clang" CXX="ccache clang++"
 echo "::endgroup::"
 
-# Return to the initial working directory
 cd $WORKDIR
 
-# Clone AnyKernel
 log "Cloning anykernel from $(simplify_gh_url "$ANYKERNEL_REPO")"
 git clone -q --depth=1 $ANYKERNEL_REPO anykernel
 
-# Set kernel string in anykernel
 AK3_ZIP_NAME=${AK3_ZIP_NAME//REL/$RELEASE}
 sed -i \
   "s/kernel.string=.*/kernel.string=${KERNEL_NAME} ${RELEASE} ${LINUX_VERSION} ${VARIANT} by Ahmed Al-Nassif (ahmed-alnassif)/g" \
   $WORKDIR/anykernel/anykernel.sh
 
-# Zip the anykernel
 cd anykernel
-log "Zipping anykernel..."
+log "Zipping anykernel"
 if [ ! -f "$KERNEL_IMAGE" ];then
   error "$KERNEL_IMAGE not found."
   exit 1

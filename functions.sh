@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# KernelSU-related functions
 install_ksu() {
   local REPO="$1"
   local REF="$2"
@@ -16,39 +15,39 @@ install_ksu() {
   curl -LSs "$URL" | bash -s "$REF"
 }
 
-# ksu_included() function
-# Type: bool
 ksu_included() {
   [ "$KSU" == "yes" ]
   return $?
 }
 
-# susfs_included() function
-# Type: bool
 susfs_included() {
   [ "$KSU_SUSFS" == "true" ]
   return $?
 }
 
-# simplify_gh_url <github-repository-url>
 simplify_gh_url() {
   local URL="$1"
   echo "$URL" | sed "s|https://github.com/||g" | sed "s|.git||g"
 }
 
-# Kernel scripts function
 config() {
   $KSRC/scripts/config --file $DEFCONFIG_FILE $@
 }
 
-# Logging function
 log() {
-  echo -e "[LOG] $*"
+  echo -e "[*] $*"
+}
+
+success() {
+  echo -e "[+] $*"
+}
+
+warning() {
+  echo -e "[!] $*"
 }
 
 error() {
-  echo -e "[ERROR] $*"
-  exit 1
+  echo -e "[-] $*"
 }
 
 retry() {
@@ -61,14 +60,14 @@ retry() {
             return 0
         fi
 
-        echo "Command failed (attempt $attempt/$max_attempts): $*"
-        echo "Retrying in ${delay}s..."
+        error "Command failed (attempt $attempt/$max_attempts): $*"
+        log "Retrying in ${delay}s..."
         sleep $delay
         delay=$((delay + 1))
         attempt=$((attempt + 1))
     done
 
-    echo "Error: Command failed after $max_attempts attempts: $*" >&2
+    error "Command failed after $max_attempts attempts: $*" >&2
     return 1
 }
 
