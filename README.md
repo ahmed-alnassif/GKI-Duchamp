@@ -16,8 +16,8 @@
 
 A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Duchamp)** and compatible with any device running a **6.1.x-android14** GKI kernel. Designed to offer maximum flexibility, it provides multiple variants to suit your specific needs, whether you prioritize root management, system integrity, or performance.
 > [!Important]
-> This is a **GKI** kernel and not a **custom** kernel!
-> It supports **ALL** devices that shipped with **Linux 6.1.x** and **Android 14** (stock or AOSP)
+> - This is a **GKI** kernel and not a **custom** kernel!
+> - It supports **ALL** devices that shipped with **Linux 6.1.x** and **Android 14** (stock or AOSP)
 
 ## ✨ Key Features
 

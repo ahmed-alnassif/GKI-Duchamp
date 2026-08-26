@@ -336,8 +336,8 @@ jobs:
             - ⚙️ **Compiler:** ${{ env.COMPILER_STRING }}
 
             > [!Important]
-            > This is a **GKI** kernel and not a **custom** kernel!
-            > It supports **ALL** devices that shipped with **Linux 6.1.x** and **Android 14** (stock or AOSP)
+            > - This is a **GKI** kernel and not a **custom** kernel!
+            > - It supports **ALL** devices that shipped with **Linux 6.1.x** and **Android 14** (stock or AOSP)
 
             ---
 
