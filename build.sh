@@ -230,7 +230,7 @@ echo "VARIANT=$VARIANT" >> $GITHUB_ENV
 
 if [ "$NM" = "true" ]; then
   log "Applying NoMount"
-  curl "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/dev/kernel/setup.sh" | bash -s dev
+  curl "https://raw.githubusercontent.com/maxsteeel/nomount/refs/heads/dev/kernel/setup.sh" | bash -s master
 fi
 echo "::endgroup::"
 
