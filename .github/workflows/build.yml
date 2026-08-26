@@ -335,7 +335,13 @@ jobs:
             $(echo "$VARIANTS" |  grep -i WirelessKSU | sed 's/^/  - /')
             - ⚙️ **Compiler:** ${{ env.COMPILER_STRING }}
 
-            >[!Important]
+            > [!Important]
+            > This is a **GKI** kernel and not a **custom** kernel!
+            > It supports **ALL** devices that shipped with **Linux 6.1.x** and **Android 14** (stock or AOSP)
+
+            ---
+
+            >[!Note]
             >- **Bootloop?** Flash a **Compat** variant first.
             >- **Issues?** Check [Discussions](https://github.com/ahmed-alnassif/GKI-Duchamp/discussions) before opening an issue.
 
