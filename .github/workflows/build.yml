@@ -321,6 +321,10 @@ jobs:
             cat << EOF
             ### ✨ ${{ env.RELEASE_NAME }} ✨
 
+            > [!Tip]
+            > 💰 **Support this project:** If GKID Kernel is useful to you, consider a donation - USDT (TRC20): \`TCyghELuquAtoUFdY65iuJSMqJXbYhWidA\`. Only send on the TRON network. See the [README](https://github.com/ahmed-alnassif/GKI-Duchamp#-support-this-project) for details.
+
+
             **Build Information:**
             - 🐧 **Kernel:** ${{ env.RELEASE_NAME }}
             - 🔥 **LTO optimizations:** ${LTO^}

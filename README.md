@@ -18,6 +18,7 @@ A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Du
 > [!Important]
 > - This is a **GKI** kernel and not a **custom** kernel!
 > - It supports **ALL** devices that shipped with **Linux 6.1.x** and **Android 14** (stock or AOSP)
+> - **If GKID Kernel is useful to you, please consider a donation.** It helps support continued updates, new features, and fixes for reported issues. See [💰 Donations](#-support-this-project) below.
 
 ## ✨ Key Features
 
@@ -65,16 +66,25 @@ A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Du
 *   **🛡️ SUSFS Integration:** Advanced kernel-level hiding and spoofing capabilities (available in dedicated variants)
 *   **🔒 Baseband Guard (BBG):** Lightweight LSM that blocks unauthorized writes to critical partitions and device nodes, protecting the baseband and boot chain from tampering
 
-## ⭐ Support the Development
+## 🤝 Support This Project
 
-If you find this kernel useful, consider showing your support:
+I actively maintain this kernel, ship updates, and respond to feature requests and bug reports. If it's improved your device, here's how you can support that ongoing work:
+
+### 💰 Donations
+
+| Method | Address |
+|--------|---------|
+| USDT (TRC20) | `TCyghELuquAtoUFdY65iuJSMqJXbYhWidA` |
+
+> [!Warning]
+> Only send **USDT on the TRON (TRC20) network** to this address. Other coins or networks will result in permanent loss of funds.
+
+### Other ways to help
 
 *   **Star the Repository:** Give this project a ⭐ on GitHub to help others discover it
 *   **Share:** Spread the word in your community, forums, or with fellow Poco X6 Pro users
 *   **Report Issues:** Found a bug? Open an issue with detailed logs to help improve stability
 *   **Contribute:** Pull requests, suggestions, and constructive feedback are always welcome
-
-Your support helps keep this project maintained and improved for everyone.
 
 ## 🧩 Recommended Modules for Poco X6 Pro
 
