@@ -82,6 +82,7 @@ def build_release_body(env_vars):
 
 	kali_module_line = "None" if nh_input != "true" else ""
 
+	cap_first = lambda s: s[0].upper() + s[1:] if s else s
 	body = f"""{warning}### ✨ {env_vars['RELEASE_NAME']} ✨
 
 > [!Tip]
@@ -90,7 +91,7 @@ def build_release_body(env_vars):
 
 **Build Information:**
 - 🐧 **Kernel:** {env_vars['RELEASE_NAME']}
-- 🔥 **LTO optimizations:** {lto_input.capitalize()}
+- 🔥 **LTO optimizations:** {cap_first(lto_input)}
 - 🐉 **Kali NetHunter:** {status_map.get(nh_input, 'Disabled')}
 - 🐳 **DroidSpaces:** {status_map.get(droidspaces_input, 'Disabled')}
 - 🛡️ **SuSFS:** ඞ {env_vars['SUSFS_VERSION']}
