@@ -1,4 +1,7 @@
 name: GKI-Duchamp Builder
+permissions:
+  contents: read
+  actions: write
 
 on:
   workflow_dispatch:
@@ -274,7 +277,6 @@ jobs:
       - name: Upload All Builds to release repo
         uses: softprops/action-gh-release@v3.0.2
         with:
-          repository: ${{ env.RELEASE_REPO }}
           name: ${{ env.RELEASE_NAME }}
           tag_name: ${{ env.RELEASE }}
           prerelease: true
