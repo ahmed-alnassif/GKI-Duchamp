@@ -50,8 +50,12 @@ def variant_link(variant, repo, tag):
 
 
 def build_release_body(env_vars):
-	repo = os.environ["RELEASE_REPO"]
-	tag = os.environ["RELEASE"]
+	repo = env_vars.get("RELEASE_REPO")
+	tag = env_vars.get("RELEASE")
+
+	missing = [k for k in ("RELEASE_REPO", "RELEASE", "RELEASE_NAME", "LINUX_VERSION", "COMPILER_STRING") if not env_vars.get(k)]
+	if missing:
+		raise SystemExit(f"ERROR: missing required build-env values: {', '.join(missing)}")
 
 	variants = sorted(
 		os.path.basename(p)[:-4] for p in glob.glob("release-artifacts/*.zip")
@@ -78,25 +82,25 @@ def build_release_body(env_vars):
 
 	kali_module_line = "None" if nh_input != "true" else ""
 
-	body = f"""{warning}### ✨ {os.environ['RELEASE_NAME']} ✨
+	body = f"""{warning}### ✨ {env_vars['RELEASE_NAME']} ✨
 
 > [!Tip]
 > 💰 **Support this project:** If GKID Kernel is useful to you, consider a donation - USDT (TRC20): `TCyghELuquAtoUFdY65iuJSMqJXbYhWidA`. Only send on the TRON network. See the [README](https://github.com/ahmed-alnassif/GKI-Duchamp#-support-this-project) for details.
 
 
 **Build Information:**
-- 🐧 **Kernel:** {os.environ['RELEASE_NAME']}
+- 🐧 **Kernel:** {env_vars['RELEASE_NAME']}
 - 🔥 **LTO optimizations:** {lto_input.capitalize()}
 - 🐉 **Kali NetHunter:** {status_map.get(nh_input, 'Disabled')}
 - 🐳 **DroidSpaces:** {status_map.get(droidspaces_input, 'Disabled')}
 - 🛡️ **SuSFS:** ඞ {env_vars['SUSFS_VERSION']}
 - 🥷 **NoMount:** {status_map.get(nm_input, 'Disabled')}
-- 🔖 **Version:** {os.environ['LINUX_VERSION']} (android14-6.1-lts)
+- 🔖 **Version:** {env_vars['LINUX_VERSION']} (android14-6.1-lts)
 - 📦 **Variants:**
 {gkid_variants}
 - 🐉 **Kali NetHunter KernelSU modules:** {kali_module_line}
 {wireless_variants}
-- ⚙️ **Compiler:** {os.environ['COMPILER_STRING']}
+- ⚙️ **Compiler:** {env_vars['COMPILER_STRING']}
 
 > [!Important]
 > - This is a **GKI** kernel and not a **custom** kernel!
