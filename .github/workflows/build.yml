@@ -1,6 +1,6 @@
 name: GKI-Duchamp Builder
 permissions:
-  contents: read
+  contents: write
   actions: write
 
 on:
