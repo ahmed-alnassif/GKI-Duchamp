@@ -7,6 +7,7 @@
 [![Build Status](https://github.com/ahmed-alnassif/GKI-Duchamp/actions/workflows/build.yml/badge.svg)](https://github.com/ahmed-alnassif/GKI-Duchamp/actions/workflows/build.yml)
 [![Latest Release](https://img.shields.io/github/v/release/ahmed-alnassif/GKI-Duchamp?label=Latest%20Release&color=00aa00)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
 [![Downloads](https://img.shields.io/github/downloads/ahmed-alnassif/GKI-Duchamp/total?label=Downloads&color=00aa00)](https://github.com/ahmed-alnassif/GKI-Duchamp/releases)
+[![Group](https://img.shields.io/badge/Telegram-Group-blue.svg?logo=telegram)](https://t.me/ahmed_alnassif_tg)
 [![GitHub License](https://img.shields.io/github/license/ahmed-alnassif/GKI-Duchamp?logo=gnu)](/LICENSE)
 [![KernelSU](https://img.shields.io/badge/KernelSU-built--in-success)](https://github.com/tiann/KernelSU)
 ![ReSukiSU](https://img.shields.io/badge/ReSukiSU-built--in-success)
@@ -85,6 +86,12 @@ I actively maintain this kernel, ship updates, and respond to feature requests a
 *   **Share:** Spread the word in your community, forums, or with fellow Poco X6 Pro users
 *   **Report Issues:** Found a bug? Open an issue with detailed logs to help improve stability
 *   **Contribute:** Pull requests, suggestions, and constructive feedback are always welcome
+
+## Community
+
+Join the discussion, get support, and stay up to date on GKID and other projects:
+
+- **Telegram Group:** [ahmed_alnassif_tg](https://t.me/ahmed_alnassif_tg)
 
 ## 🧩 Recommended Modules for Poco X6 Pro
 
