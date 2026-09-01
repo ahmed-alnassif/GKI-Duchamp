@@ -16,10 +16,16 @@
 [![SUSFS](https://img.shields.io/badge/SUSFS-Integrated-orange)](https://gitlab.com/simonpunk/susfs4ksu)
 
 A feature-rich Generic Kernel Image (GKI) kernel built for the **Poco X6 Pro (Duchamp)** and compatible with any device running a **6.1.x-android14** GKI kernel. Designed to offer maximum flexibility, it provides multiple variants to suit your specific needs, whether you prioritize root management, system integrity, or performance.
+
 > [!Important]
 > - This is a **GKI** kernel and not a **custom** kernel!
 > - It supports **ALL** devices that shipped with **Linux 6.1.x** and **Android 14** (stock or AOSP)
 > - **If GKID Kernel is useful to you, please consider a donation.** It helps support continued updates, new features, and fixes for reported issues. See [💰 Donations](#-support-this-project) below.
+
+✨ **ReSuSFS** – Your SuSFS Companion
+
+- **[ReSuSFS](https://github.com/ahmed-alnassif/ReSuSFS)** – The simplest way to manage SuSFS on KernelSU. Clean config files, toggle switches, and a built-in script editor for power users.
+- **Community:** Join the discussion and get support on [Telegram](https://t.me/ahmed_alnassif_tg).
 
 ## ✨ Key Features
 

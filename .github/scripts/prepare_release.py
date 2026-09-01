@@ -88,6 +88,10 @@ def build_release_body(env_vars):
 > [!Tip]
 > 💰 **Support this project:** If GKID Kernel is useful to you, consider a donation - USDT (TRC20): `TCyghELuquAtoUFdY65iuJSMqJXbYhWidA`. Only send on the TRON network. See the [README](https://github.com/ahmed-alnassif/GKI-Duchamp#-support-this-project) for details.
 
+✨ **ReSuSFS** – Your SuSFS Companion
+
+- **[ReSuSFS](https://github.com/ahmed-alnassif/ReSuSFS)** – The simplest way to manage SuSFS on KernelSU. Clean config files, toggle switches, and a built-in script editor for power users.
+- **Community:** Join the discussion and get support on [Telegram](https://t.me/ahmed_alnassif_tg).
 
 **Build Information:**
 - 🐧 **Kernel:** {env_vars['RELEASE_NAME']}
