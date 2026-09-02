@@ -202,6 +202,7 @@ Test both and choose the one that performs better on your network.
 
 **Full Commit History:** [Browse all commits](https://gitlab.com/simonpunk/susfs4ksu)
 
+---
 **NoMount Changelog (last 5 commits):**
 
 {read_or_default("release-artifacts/nomount_changelog.txt")}

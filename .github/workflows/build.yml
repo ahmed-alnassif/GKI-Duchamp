@@ -285,3 +285,79 @@ jobs:
             release-artifacts/checksums.txt
             release-artifacts/checksums-md5.txt
           body_path: release_body.md
+
+      - name: Upload to Telegram
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          TOPIC_ID: ${{ secrets.TOPIC_ID }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RELEASE_NAME: ${{ env.RELEASE_NAME }}
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.RELEASE }}
+        run: |
+          set -euo pipefail
+
+          [[ -n "$BOT_TOKEN" ]] || { echo "::error::BOT_TOKEN is not set"; exit 1; }
+          [[ -n "$CHAT_ID" ]] || { echo "::error::CHAT_ID is not set"; exit 1; }
+          [[ -n "$TOPIC_ID" ]] || { echo "::error::TOPIC_ID is not set"; exit 1; }
+
+          read_or_default() {
+            if [[ -f "$1" ]]; then
+              cat "$1"
+            else
+              echo "Not available"
+            fi
+          }
+
+          # Build full message with all content
+          CAPTION=$(cat <<EOF
+          **✨ $RELEASE_NAME ✨**
+
+          **Supported devices:**
+          📱 **All devices** that shipped with **Linux 6.1.x** and **Android 14** (stock or AOSP)
+
+          \`What's new:
+          **Android14-6.1-LTS:**
+          $(read_or_default "release-artifacts/android_kernel-6.1_changelog.txt")
+
+          ---
+          **SuSFS:**
+          $(read_or_default "release-artifacts/susfs_changelog.txt")
+
+          ---
+          **NoMount:**
+          $(read_or_default "release-artifacts/nomount_changelog.txt")
+
+          ---
+          **KernelSU:**
+          $(read_or_default "release-artifacts/ksu_changelog.txt")
+
+          ---
+          **ReSukiSU:**
+          $(read_or_default "release-artifacts/ReSukiSU_changelog.txt")
+
+          ---
+          **KernelSU Next:**
+          $(read_or_default "release-artifacts/ksun_changelog.txt")
+
+          [**Download**]($RELEASE_URL)
+
+          [**Support the project**](https://github.com/ahmed-alnassif/GKI-Duchamp#-support-this-project)
+
+          [Commit]($COMMIT_URL) • [CI #$RUN_NUMBER]($RUN_URL)
+          EOF
+          )
+
+          # Escape special characters for MarkdownV2
+          CAPTION=$(printf '%s' "$CAPTION" | sed 's/[\\_*\[\]()~`>#+\-=|{}.!]/\\&/g')
+
+          curl --fail-with-body -sS \
+            -F "chat_id=$CHAT_ID" \
+            -F "message_thread_id=$TOPIC_ID" \
+            -F "photo=@docs/banner.png" \
+            -F "caption=$CAPTION" \
+            -F "parse_mode=MarkdownV2" \
+            "https://api.telegram.org/bot$BOT_TOKEN/sendDocument"
