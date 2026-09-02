@@ -314,14 +314,13 @@ jobs:
             fi
           }
 
-          # Build full message with all content
           CAPTION=$(cat <<EOF
           **✨ $RELEASE_NAME ✨**
 
           **Supported devices:**
           📱 **All devices** that shipped with **Linux 6\.1\.x** and **Android 14** \(stock or AOSP\)
 
-          \> What's new:
+          >What's new:
           **Android14\-6\.1\-LTS:**
           $(read_or_default "release-artifacts/android_kernel-6.1_changelog.txt")
 
@@ -352,6 +351,8 @@ jobs:
           [Commit]($COMMIT_URL) • [CI \#$RUN_NUMBER]($RUN_URL)
           EOF
           )
+
+          CAPTION=$(printf '%s\n' "$CAPTION" | sed 's/^[[:space:]]*//')
 
           curl --fail-with-body -sS \
             -F "chat_id=$CHAT_ID" \
