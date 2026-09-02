@@ -304,6 +304,8 @@ jobs:
           [[ -n "$CHAT_ID" ]] || { echo "::error::CHAT_ID is not set"; exit 1; }
           [[ -n "$TOPIC_ID" ]] || { echo "::error::TOPIC_ID is not set"; exit 1; }
 
+          RELEASE_NAME=$(printf '%s' "$RELEASE_NAME" | sed 's/[\\_*\[\]()~`>#+\-=|{}.!]/\\&/g')
+
           read_or_default() {
             if [[ -f "$1" ]]; then
               cat "$1"
