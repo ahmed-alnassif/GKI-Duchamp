@@ -80,16 +80,11 @@ git log --pretty=format:"- [%h](https://${SUSFS_URL#https://}/commit/%H) %s" -5 
 > "$RELEASE_DIR/susfs_changelog.txt"
 cd ..
 
-gh api "repos/ahmed-alnassif/GKI-Duchamp-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
-> "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
-gh api 'repos/maxsteeel/nomount/commits?sha=master&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
-> "$RELEASE_DIR/nomount_changelog.txt"
-gh api 'repos/tiann/KernelSU/commits?sha=main&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
-> "$RELEASE_DIR/ksu_changelog.txt"
-gh api 'repos/ReSukiSU/ReSukiSU/commits?sha=main&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
-> "$RELEASE_DIR/ReSukiSU_changelog.txt"
-gh api 'repos/KernelSU-Next/KernelSU-Next/commits?sha=dev&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
-> "$RELEASE_DIR/ksun_changelog.txt"
+generate_gh_changelog "ahmed-alnassif/GKI-Duchamp-6.1" "$KERNEL_BRANCH" 10 "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
+generate_gh_changelog "maxsteeel/nomount" "master" 5 "$RELEASE_DIR/nomount_changelog.txt"
+generate_gh_changelog "tiann/KernelSU" "main" 5 "$RELEASE_DIR/ksu_changelog.txt"
+generate_gh_changelog "ReSukiSU/ReSukiSU" "main" 5 "$RELEASE_DIR/ReSukiSU_changelog.txt"
+generate_gh_changelog "KernelSU-Next/KernelSU-Next" "dev" 5 "$RELEASE_DIR/ksun_changelog.txt"
 
 echo "::group::[*] Downloading Clang"
 CLANG_BIN="$WORKDIR/neutron-clang/bin"

@@ -99,3 +99,14 @@ clone_susfs() {
         git clone --depth=$DEPTH -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
     fi
 }
+
+generate_gh_changelog() {
+    local repo="$1"
+    local branch="$2"
+    local count="${3:-5}"
+    local output="$4"
+
+    gh api "repos/${repo}/commits?sha=${branch}&per_page=${count}" \
+        --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])' \
+        > "$output"
+}
