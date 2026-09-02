@@ -74,6 +74,12 @@ SUSFS_BRANCH="gki-android14-6.1"
 SUSFS_PATCH="gki-android14-6.1"
 
 log "Changelog of repos"
+clone_susfs 5
+cd "$SUSFS_DIR"
+git log --pretty=format:"- [%h](https://${SUSFS_URL#https://}/commit/%H) %s" -5 "$SUSFS_BRANCH" \
+> "$RELEASE_DIR/susfs_changelog.txt"
+cd ..
+
 gh api "repos/ahmed-alnassif/GKI-Duchamp-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
 gh api 'repos/maxsteeel/nomount/commits?sha=master&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\

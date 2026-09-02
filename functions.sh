@@ -94,7 +94,8 @@ apply_susfs_patches() {
 }
 
 clone_susfs() {
+	DEPTH=${1:-1}
     if [ ! -d "$SUSFS_DIR" ]; then
-        git clone --depth=1 -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
+        git clone --depth=$DEPTH -q "$SUSFS_URL" -b "$SUSFS_BRANCH" "$SUSFS_DIR"
     fi
 }
