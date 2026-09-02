@@ -319,29 +319,29 @@ jobs:
           **✨ $RELEASE_NAME ✨**
 
           **Supported devices:**
-          📱 **All devices** that shipped with **Linux 6.1.x** and **Android 14** (stock or AOSP)
+          📱 **All devices** that shipped with **Linux 6\.1\.x** and **Android 14** \(stock or AOSP\)
 
-          \`What's new:
-          **Android14-6.1-LTS:**
+          \> What's new:
+          **Android14\-6\.1\-LTS:**
           $(read_or_default "release-artifacts/android_kernel-6.1_changelog.txt")
 
-          ---
+          \-\-\-
           **SuSFS:**
           $(read_or_default "release-artifacts/susfs_changelog.txt")
 
-          ---
+          \-\-\-
           **NoMount:**
           $(read_or_default "release-artifacts/nomount_changelog.txt")
 
-          ---
+          \-\-\-
           **KernelSU:**
           $(read_or_default "release-artifacts/ksu_changelog.txt")
 
-          ---
+          \-\-\-
           **ReSukiSU:**
           $(read_or_default "release-artifacts/ReSukiSU_changelog.txt")
 
-          ---
+          \-\-\-
           **KernelSU Next:**
           $(read_or_default "release-artifacts/ksun_changelog.txt")
 
