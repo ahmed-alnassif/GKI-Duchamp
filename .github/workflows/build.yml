@@ -291,7 +291,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
           TOPIC_ID: ${{ secrets.TOPIC_ID }}
-          COMMIT_URL: ${{ github.event.head_commit.url }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           REPOSITORY: ${{ github.repository }}
           RUN_NUMBER: ${{ github.run_number }}
