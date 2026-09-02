@@ -31,13 +31,14 @@ def convert(text):
 
 
 def main():
+	if len(sys.argv) == 3 and sys.argv[1] == "--escape":
+		sys.stdout.write(escape(sys.argv[2]))
+		return
 	if len(sys.argv) != 2:
 		print(f"Usage: {sys.argv[0]} <markdown-file>", file=sys.stderr)
 		sys.exit(1)
-
 	with open(sys.argv[1], encoding="utf-8") as file:
 		sys.stdout.write(convert(file.read()))
-
 
 if __name__ == "__main__":
 	main()
