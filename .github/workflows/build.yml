@@ -349,12 +349,9 @@ jobs:
 
           [**Support the project**](https://github.com/ahmed-alnassif/GKI-Duchamp#-support-this-project)
 
-          [Commit]($COMMIT_URL) • [CI #$RUN_NUMBER]($RUN_URL)
+          [Commit]($COMMIT_URL) • [CI \#$RUN_NUMBER]($RUN_URL)
           EOF
           )
-
-          # Escape special characters for MarkdownV2
-          CAPTION=$(printf '%s' "$CAPTION" | sed 's/[\\_*\[\]()~`>#+\-=|{}.!]/\\&/g')
 
           curl --fail-with-body -sS \
             -F "chat_id=$CHAT_ID" \
