@@ -314,13 +314,8 @@ jobs:
             fi
           }
 
-          CAPTION=$(cat <<EOF
-          **✨ $RELEASE_NAME ✨**
-
-          **Supported devices:**
-          📱 **All devices** that shipped with **Linux 6\.1\.x** and **Android 14** \(stock or AOSP\)
-
-          >What's new:
+          CHANGELOG_BODY=$(cat <<INNER
+          What's new:
           **Android14\-6\.1\-LTS:**
           $(read_or_default "release-artifacts/android_kernel-6.1_changelog.txt")
 
@@ -343,6 +338,27 @@ jobs:
           \-\-\-
           **KernelSU Next:**
           $(read_or_default "release-artifacts/ksun_changelog.txt")
+          INNER
+          )
+
+          CHANGELOG_QUOTED=$(printf '%s\n' "$CHANGELOG_BODY" | sed 's/^[[:space:]]*//' | awk '
+            NR==1 { print "**>" $0; next }
+            { lines[NR] = $0 }
+            END {
+              for (i = 2; i <= NR; i++) {
+                if (i == NR) print ">" lines[i] "||"
+                else print ">" lines[i]
+              }
+            }
+          ')
+
+          CAPTION=$(cat <<EOF
+          **✨ $RELEASE_NAME ✨**
+
+          **Supported devices:**
+          📱 **All devices** that shipped with **Linux 6\.1\.x** and **Android 14** \(stock or AOSP\)
+
+          $CHANGELOG_QUOTED
 
           [**Download**]($RELEASE_URL)
 
