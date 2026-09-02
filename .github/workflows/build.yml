@@ -357,6 +357,11 @@ jobs:
             -F "chat_id=$CHAT_ID" \
             -F "message_thread_id=$TOPIC_ID" \
             -F "photo=@docs/banner.png" \
-            -F "caption=$CAPTION" \
-            -F "parse_mode=MarkdownV2" \
             "https://api.telegram.org/bot$BOT_TOKEN/sendPhoto"
+
+          curl --fail-with-body -sS \
+            -F "chat_id=$CHAT_ID" \
+            -F "message_thread_id=$TOPIC_ID" \
+            -F "text=$CAPTION" \
+            -F "parse_mode=MarkdownV2" \
+            "https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
