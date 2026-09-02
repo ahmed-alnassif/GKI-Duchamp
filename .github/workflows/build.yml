@@ -360,4 +360,4 @@ jobs:
             -F "photo=@docs/banner.png" \
             -F "caption=$CAPTION" \
             -F "parse_mode=MarkdownV2" \
-            "https://api.telegram.org/bot$BOT_TOKEN/sendDocument"
+            "https://api.telegram.org/bot$BOT_TOKEN/sendPhoto"
