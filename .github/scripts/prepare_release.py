@@ -203,6 +203,13 @@ Test both and choose the one that performs better on your network.
 **Full Commit History:** [Browse all commits](https://github.com/tiann/KernelSU/commits/main)
 
 ---
+**ReSukiSU Changelog (last 5 commits):**
+
+{read_or_default("release-artifacts/ReSukiSU_changelog.txt")}
+
+**Full Commit History:** [Browse all commits](https://github.com/ReSukiSU/ReSukiSU/commits/main)
+
+---
 **KernelSU Next Changelog (last 5 commits):**
 
 {read_or_default("release-artifacts/ksun_changelog.txt")}
