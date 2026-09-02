@@ -76,9 +76,11 @@ SUSFS_PATCH="gki-android14-6.1"
 log "Changelog of repos"
 gh api "repos/ahmed-alnassif/GKI-Duchamp-6.1/commits?sha=${KERNEL_BRANCH}&per_page=10" --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/android_kernel-6.1_changelog.txt"
+gh api 'repos/maxsteeel/nomount/commits?sha=master&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+> "$RELEASE_DIR/nomount_changelog.txt"
 gh api 'repos/tiann/KernelSU/commits?sha=main&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/ksu_changelog.txt"
-gh api 'repos/ReSukiSU/ReSukiSU/commits?sha=builtin&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
+gh api 'repos/ReSukiSU/ReSukiSU/commits?sha=main&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/ReSukiSU_changelog.txt"
 gh api 'repos/KernelSU-Next/KernelSU-Next/commits?sha=dev&per_page=5' --jq '.[] | "- [" + .sha[0:7] + "](" + .html_url + ") " + (.commit.message | split("\n")[0])'\
 > "$RELEASE_DIR/ksun_changelog.txt"

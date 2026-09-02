@@ -196,6 +196,13 @@ Test both and choose the one that performs better on your network.
 **Full Commit History:** [Browse all commits](https://github.com/ahmed-alnassif/GKI-Duchamp-6.1/commits/GKID-6.1)
 
 ---
+**NoMount Changelog (last 5 commits):**
+
+{read_or_default("release-artifacts/nomount_changelog.txt")}
+
+**Full Commit History:** [Browse all commits](https://github.com/maxsteeel/nomount/commits/master)
+
+---
 **KernelSU Changelog (last 5 commits):**
 
 {read_or_default("release-artifacts/ksu_changelog.txt")}
