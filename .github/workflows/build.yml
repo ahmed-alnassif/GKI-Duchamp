@@ -307,8 +307,8 @@ jobs:
           RELEASE_NAME=$(printf '%s' "$RELEASE_NAME" | sed 's/[\\_*\[\]()~`>#+\-=|{}.!]/\\&/g')
 
           read_or_default() {
-            if [[ -f "$1" ]]; then
-              sed 's/[\\_*\[\]()~`>#+\-=|{}.!]/\\&/g' "$1"
+          if [[ -f "$1" ]]; then
+              python3 .github/scripts/markdown_to_telegram.py "$1"
             else
               echo "Not available"
             fi
