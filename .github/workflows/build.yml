@@ -308,7 +308,7 @@ jobs:
 
           read_or_default() {
             if [[ -f "$1" ]]; then
-              cat "$1"
+              sed 's/[\\_*\[\]()~`>#+\-=|{}.!]/\\&/g' "$1"
             else
               echo "Not available"
             fi
