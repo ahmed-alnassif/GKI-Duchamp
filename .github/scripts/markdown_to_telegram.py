@@ -3,32 +3,31 @@
 import re
 import sys
 
-SPECIAL = r"\_*[]()~`>#+-=|{}.!"
+PATTERN = re.compile(r"`[^`\n]*`|\[[^\]\n]+\]\([^)]+\)")
 
 
 def escape(text):
-	return re.sub(r"([\\_*[\]()~`>#+\-=|{}.!])", r"\\\1", text)
+	return re.sub(r"([\\_*\[\]()~`>#+\-=|{}.!])", r"\\\1", text)
 
 
 def convert(text):
-	tokens = re.split(r"(`[^`\n]*`|\[[^\]\n]+\]\([^)]+\))", text)
+	result = []
+	last_end = 0
 
-	for i, token in enumerate(tokens):
-		if token.startswith("`") and token.endswith("`"):
-			tokens[i] = r"\`" + escape(token[1:-1]) + r"\`"
+	for m in PATTERN.finditer(text):
+		result.append(escape(text[last_end:m.start()]))
+		token = m.group(0)
 
-		elif token.startswith("[") and "](" in token:
-			match = re.fullmatch(r"\[([^\]]+)\]\(([^)]+)\)", token)
-			if match:
-				label, url = match.groups()
-				tokens[i] = f"[{escape(label)}]({url})"
-			else:
-				tokens[i] = escape(token)
+		if token.startswith("`"):
+			result.append("\\`" + escape(token[1:-1]) + "\\`")
+		else:
+			label, url = re.fullmatch(r"\[([^\]]+)\]\(([^)]+)\)", token).groups()
+			result.append(f"[{escape(label)}]({url})")
 
-		elif not token.startswith("`") and not token.startswith("["):
-			tokens[i] = escape(token)
+		last_end = m.end()
 
-	return "".join(tokens)
+	result.append(escape(text[last_end:]))
+	return "".join(result)
 
 
 def main():
